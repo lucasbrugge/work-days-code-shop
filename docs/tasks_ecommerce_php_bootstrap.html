@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tasks da Equipe - E-commerce PHP + Bootstrap</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .hero { background:linear-gradient(135deg,#0d6efd,#0a58ca); color:#fff; }
+    .task-card { border:0; box-shadow:0 .25rem .75rem rgba(0,0,0,.06); }
+    .badge-stack { font-size:.78rem; }
+    code { color:#b42318; }
+    .owner { min-width: 130px; }
+    .section-title { border-left:5px solid #0d6efd; padding-left:.75rem; }
+    .small-muted { color:#6c757d; font-size:.92rem; }
+  </style>
+</head>
+<body>
+<header class="hero py-5 mb-4">
+  <div class="container">
+    <h1 class="display-6 fw-bold">E-commerce — Tasks da Equipe</h1>
+    <p class="lead mb-2">Implementação acadêmica baseada no projeto de referência, usando <strong>somente PHP, MySQL, HTML, CSS, JavaScript e Bootstrap</strong>.</p>
+    <p class="mb-0">Laravel foi removido propositalmente desta versão. A organização MVC, Services, rotas e API serão implementadas manualmente em PHP.</p>
+  </div>
+</header>
+
+<main class="container pb-5">
+
+  <section class="alert alert-warning">
+    <h2 class="h5">Premissa técnica</h2>
+    <p class="mb-0">
+      Embora o documento original peça Laravel, esta equipe utilizará o mesmo escopo funcional como referência:
+      autenticação, catálogo, produto, carrinho de visitante, fusão no login, checkout, pagamento simulado,
+      pedidos, administração e perfil. A implementação será feita em PHP puro, mantendo separação de responsabilidades.
+    </p>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="h3 section-title mb-3">Arquitetura combinada</h2>
+    <div class="card task-card">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h3 class="h6">Backend</h3>
+            <ul class="mb-0">
+              <li>PHP 8+</li>
+              <li>PDO para MySQL</li>
+              <li>API REST retornando JSON</li>
+              <li>MVC manual: Controllers, Models e Services</li>
+              <li>Sessão PHP e/ou token opaco próprio</li>
+              <li>Transações com PDO em checkout e cancelamento</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h3 class="h6">Frontend</h3>
+            <ul class="mb-0">
+              <li>HTML5 + Bootstrap 5</li>
+              <li>JavaScript com Fetch API</li>
+              <li>LocalStorage/cookie somente para identificadores necessários</li>
+              <li>Telas responsivas</li>
+              <li>Sem framework JS adicional</li>
+              <li>Sem Laravel, React, Vue ou similares</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="h3 section-title mb-3">Distribuição geral</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle bg-white">
+        <thead class="table-dark">
+          <tr>
+            <th>Pessoa</th><th>Responsabilidade</th><th>Principal prática</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>1 — Tech Lead</strong></td><td>Arquitetura + integração</td><td>MVC, rotas, padrões, revisão</td></tr>
+          <tr><td><strong>2 — Rogger</strong></td><td>Autenticação</td><td>PHP + sessão/token + banco</td></tr>
+          <tr><td><strong>3 — Diego</strong></td><td>Produtos</td><td>CRUD + MySQL + API</td></tr>
+          <tr><td><strong>4 — Elian</strong></td><td>Categorias</td><td>CRUD + relacionamentos</td></tr>
+          <tr><td><strong>5 — Bruno</strong></td><td>Carrinho</td><td>Regras de negócio + Service</td></tr>
+          <tr><td><strong>6 — Gustavo</strong></td><td>Pedidos/Checkout</td><td>Estoque + transações</td></tr>
+          <tr><td><strong>7 — Mariana</strong></td><td>Frontend</td><td>HTML/CSS/JS + Bootstrap + consumo da API</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="h3 section-title mb-4">Tasks por integrante</h2>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-dark text-white"><strong>1 — Tech Lead · Arquitetura e integração</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>TL-01 — Estruturar o projeto</strong>: criar pastas <code>public/</code>, <code>app/Controllers/</code>, <code>app/Models/</code>, <code>app/Services/</code>, <code>app/Middleware/</code>, <code>config/</code>, <code>routes/</code> e <code>database/</code>.</li>
+          <li><strong>TL-02 — Criar front controller</strong>: configurar <code>public/index.php</code> como ponto único de entrada.</li>
+          <li><strong>TL-03 — Criar roteador PHP</strong>: mapear método HTTP + URL para Controllers e suportar parâmetros como <code>/api/products/{id}</code>.</li>
+          <li><strong>TL-04 — Padronizar respostas JSON</strong>: helpers para sucesso, validação, 401, 403, 404, 409, 422 e 500.</li>
+          <li><strong>TL-05 — Configurar banco</strong>: conexão PDO centralizada, variáveis de ambiente e tratamento de erro.</li>
+          <li><strong>TL-06 — Definir schema inicial</strong>: users, categories, products, carts, cart_items, addresses, orders e order_items.</li>
+          <li><strong>TL-07 — Padronizar Services</strong>: regras de negócio fora dos Controllers.</li>
+          <li><strong>TL-08 — Middleware</strong>: criar autenticação e autorização de admin.</li>
+          <li><strong>TL-09 — Integração das branches</strong>: revisar PRs, resolver conflitos e validar contratos da API.</li>
+          <li><strong>TL-10 — README</strong>: documentar instalação, banco, rotas, usuários de teste e regra de fusão do carrinho.</li>
+          <li><strong>TL-11 — Seed SQL</strong>: organizar script de dados iniciais para admin, clientes, categorias e produtos.</li>
+          <li><strong>TL-12 — Revisão final</strong>: testar fluxo completo visitante → login → carrinho fundido → checkout → pagamento → admin.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-primary text-white"><strong>2 — Rogger · Autenticação e autorização</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>AUTH-01 — Tabela users</strong>: campos id, nome, email único, senha hash, papel <code>cliente/admin</code>, timestamps.</li>
+          <li><strong>AUTH-02 — Cadastro</strong>: endpoint <code>POST /api/auth/register</code>.</li>
+          <li><strong>AUTH-03 — Validações</strong>: nome, email, senha, confirmação de senha e email único.</li>
+          <li><strong>AUTH-04 — Senhas seguras</strong>: usar <code>password_hash()</code> e <code>password_verify()</code>.</li>
+          <li><strong>AUTH-05 — Login</strong>: endpoint <code>POST /api/auth/login</code>.</li>
+          <li><strong>AUTH-06 — Sessão/token</strong>: gerar identificador seguro após login e associar ao usuário.</li>
+          <li><strong>AUTH-07 — Logout</strong>: endpoint <code>POST /api/auth/logout</code> e invalidação da sessão/token.</li>
+          <li><strong>AUTH-08 — Usuário atual</strong>: endpoint <code>GET /api/auth/me</code>.</li>
+          <li><strong>AUTH-09 — Middleware autenticado</strong>: bloquear checkout, pedidos, perfil e endereços sem login.</li>
+          <li><strong>AUTH-10 — Middleware admin</strong>: impedir cliente de acessar rotas administrativas e retornar 403.</li>
+          <li><strong>AUTH-11 — Integração com carrinho visitante</strong>: login e cadastro devem aceitar <code>guest_cart_token</code> e disparar a fusão implementada por Bruno.</li>
+          <li><strong>AUTH-12 — Perfil</strong>: endpoints para consultar e editar nome/email do usuário.</li>
+          <li><strong>AUTH-13 — Endereços</strong>: CRUD básico de endereços do usuário, em conjunto com Gustavo.</li>
+          <li><strong>AUTH-14 — Testes manuais</strong>: cadastro duplicado, senha errada, token inválido, rota admin como cliente e logout.</li>
+        </ol>
+        <p class="small-muted mb-0"><strong>Dependência:</strong> combinar com Bruno o contrato da função de fusão de carrinhos antes de finalizar login/cadastro.</p>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-success text-white"><strong>3 — Diego · Produtos</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>PROD-01 — Model Product</strong>: estruturar acesso à tabela products.</li>
+          <li><strong>PROD-02 — CRUD administrativo</strong>: criar, editar e desativar produtos.</li>
+          <li><strong>PROD-03 — Upload de imagem</strong>: validar extensão/tamanho e salvar caminho no banco.</li>
+          <li><strong>PROD-04 — Listagem pública</strong>: <code>GET /api/products</code>.</li>
+          <li><strong>PROD-05 — Busca</strong>: filtrar produtos por nome.</li>
+          <li><strong>PROD-06 — Filtro por categoria</strong>: receber <code>category_id</code>.</li>
+          <li><strong>PROD-07 — Ordenação</strong>: preço crescente, decrescente e mais recentes.</li>
+          <li><strong>PROD-08 — Paginação</strong>: parâmetros <code>page</code> e <code>per_page</code>.</li>
+          <li><strong>PROD-09 — Detalhe</strong>: <code>GET /api/products/{id}</code>.</li>
+          <li><strong>PROD-10 — Regras de visibilidade</strong>: produto inativo não aparece no catálogo e retorna 404 na área pública.</li>
+          <li><strong>PROD-11 — Estoque</strong>: expor quantidade disponível e indicar indisponibilidade quando estoque = 0.</li>
+          <li><strong>PROD-12 — Exclusão lógica</strong>: não excluir fisicamente produto que possa existir em pedidos antigos.</li>
+          <li><strong>PROD-13 — Seed</strong>: preparar pelo menos 30 produtos com preços e estoques variados.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-info text-dark"><strong>4 — Elian · Categorias</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>CAT-01 — Tabela categories</strong>: id, nome, slug opcional e timestamps.</li>
+          <li><strong>CAT-02 — Model Category</strong>: métodos de consulta e persistência.</li>
+          <li><strong>CAT-03 — Listagem pública</strong>: <code>GET /api/categories</code>.</li>
+          <li><strong>CAT-04 — Criar categoria</strong>: rota administrativa.</li>
+          <li><strong>CAT-05 — Editar categoria</strong>: rota administrativa.</li>
+          <li><strong>CAT-06 — Excluir categoria</strong>: validar se possui produtos associados.</li>
+          <li><strong>CAT-07 — Regra de integridade</strong>: impedir exclusão quando houver produtos vinculados ou documentar estratégia alternativa.</li>
+          <li><strong>CAT-08 — Relacionamento</strong>: garantir <code>Category 1:N Product</code> no banco e nas queries.</li>
+          <li><strong>CAT-09 — Seed</strong>: criar pelo menos 3 categorias.</li>
+          <li><strong>CAT-10 — Integração</strong>: alinhar com Diego filtro e cadastro de produtos.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-warning text-dark"><strong>5 — Bruno · Carrinho</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>CART-01 — Tabelas carts e cart_items</strong>.</li>
+          <li><strong>CART-02 — Carrinho visitante</strong>: gerar token opaco com <code>random_bytes()</code> e persistir no servidor.</li>
+          <li><strong>CART-03 — Recuperar carrinho</strong>: <code>GET /api/cart</code> para visitante e autenticado.</li>
+          <li><strong>CART-04 — Adicionar item</strong>: <code>POST /api/cart/items</code>.</li>
+          <li><strong>CART-05 — Soma automática</strong>: produto já existente deve somar quantidade, não duplicar linha.</li>
+          <li><strong>CART-06 — Limite de estoque</strong>: não permitir quantidade acima do estoque.</li>
+          <li><strong>CART-07 — Alterar quantidade</strong>: <code>PATCH /api/cart/items/{id}</code>.</li>
+          <li><strong>CART-08 — Remover item</strong>: <code>DELETE /api/cart/items/{id}</code>.</li>
+          <li><strong>CART-09 — Total no servidor</strong>: subtotal e total calculados usando preço atual do banco.</li>
+          <li><strong>CART-10 — Service do carrinho</strong>: concentrar regras em <code>CartService</code>.</li>
+          <li><strong>CART-11 — Fusão no login</strong>: unir carrinho visitante ao carrinho da conta.</li>
+          <li><strong>CART-12 — Regra de conflito</strong>: quando produto existir nos dois carrinhos, somar quantidades e limitar ao estoque.</li>
+          <li><strong>CART-13 — Invalidar carrinho visitante</strong>: após fusão, token antigo deve deixar de funcionar.</li>
+          <li><strong>CART-14 — Carrinho único</strong>: usuário autenticado deve possuir no máximo um carrinho ativo.</li>
+          <li><strong>CART-15 — Itens indisponíveis</strong>: sinalizar produto inativo ou sem estoque.</li>
+          <li><strong>CART-16 — Integração com Rogger</strong>: disponibilizar método de fusão para login/cadastro.</li>
+          <li><strong>CART-17 — Integração com Gustavo</strong>: fornecer carrinho validado para criação do pedido.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-danger text-white"><strong>6 — Gustavo · Pedidos e Checkout</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>ORDER-01 — Tabelas</strong>: orders e order_items; payment pode ser tabela própria ou campos do pedido.</li>
+          <li><strong>ORDER-02 — Checkout autenticado</strong>: bloquear usuário não logado.</li>
+          <li><strong>ORDER-03 — Endereço</strong>: permitir selecionar endereço cadastrado.</li>
+          <li><strong>ORDER-04 — Resumo</strong>: itens, quantidades, preço unitário, frete simples e total.</li>
+          <li><strong>ORDER-05 — Validação final de estoque</strong>: validar novamente todos os itens antes da criação.</li>
+          <li><strong>ORDER-06 — Transação PDO</strong>: usar <code>beginTransaction()</code>, <code>commit()</code> e <code>rollBack()</code>.</li>
+          <li><strong>ORDER-07 — Criar pedido</strong>: status inicial <code>aguardando_pagamento</code>.</li>
+          <li><strong>ORDER-08 — Baixa de estoque</strong>: decrementar dentro da mesma transação.</li>
+          <li><strong>ORDER-09 — Congelar dados</strong>: salvar nome e preço praticado em order_items.</li>
+          <li><strong>ORDER-10 — Esvaziar carrinho</strong>: somente após pedido criado com sucesso.</li>
+          <li><strong>ORDER-11 — Pagamento simulado</strong>: <code>POST /api/orders/{id}/pay</code>, sem cartão.</li>
+          <li><strong>ORDER-12 — Registrar pagamento</strong>: status pago e data/hora.</li>
+          <li><strong>ORDER-13 — Meus pedidos</strong>: listagem e detalhe somente do próprio usuário.</li>
+          <li><strong>ORDER-14 — Cancelamento</strong>: permitido em aguardando pagamento e deve devolver estoque.</li>
+          <li><strong>ORDER-15 — Admin pedidos</strong>: listar todos e filtrar por status.</li>
+          <li><strong>ORDER-16 — Transições</strong>: aguardando → pago → enviado → entregue; aguardando → cancelado.</li>
+          <li><strong>ORDER-17 — Erro 409</strong>: bloquear transições inválidas e pagamento repetido.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card task-card mb-4">
+      <div class="card-header bg-secondary text-white"><strong>7 — Mariana · Frontend</strong></div>
+      <div class="card-body">
+        <ol>
+          <li><strong>FRONT-01 — Layout base</strong>: Navbar, container principal, rodapé e responsividade usando Bootstrap.</li>
+          <li><strong>FRONT-02 — Tela de catálogo</strong>: cards com imagem, nome, preço, estoque e paginação.</li>
+          <li><strong>FRONT-03 — Busca/filtros</strong>: nome, categoria e ordenação.</li>
+          <li><strong>FRONT-04 — Página do produto</strong>: detalhe, quantidade e botão adicionar ao carrinho.</li>
+          <li><strong>FRONT-05 — Cadastro</strong>: formulário com mensagens de validação.</li>
+          <li><strong>FRONT-06 — Login</strong>: autenticação e armazenamento do identificador necessário.</li>
+          <li><strong>FRONT-07 — Carrinho visitante</strong>: guardar apenas o token do carrinho em localStorage/cookie.</li>
+          <li><strong>FRONT-08 — Tela do carrinho</strong>: alterar quantidade, remover e exibir totais retornados pelo servidor.</li>
+          <li><strong>FRONT-09 — Preservação no login</strong>: enviar o token do carrinho visitante para autenticação.</li>
+          <li><strong>FRONT-10 — Checkout</strong>: seleção/cadastro de endereço e confirmação do pedido.</li>
+          <li><strong>FRONT-11 — Pagamento simulado</strong>: botão claro informando que é apenas acadêmico.</li>
+          <li><strong>FRONT-12 — Meus pedidos</strong>: listagem e detalhe.</li>
+          <li><strong>FRONT-13 — Perfil</strong>: edição de dados e endereços.</li>
+          <li><strong>FRONT-14 — Painel admin</strong>: CRUD visual de produtos e categorias.</li>
+          <li><strong>FRONT-15 — Pedidos admin</strong>: listagem, filtro e avanço de status.</li>
+          <li><strong>FRONT-16 — Controle de navegação</strong>: exibir painel somente para admin.</li>
+          <li><strong>FRONT-17 — Estados de UI</strong>: loading, vazio, erro 404, 401, 403, 409 e 422.</li>
+          <li><strong>FRONT-18 — Indicador do carrinho</strong>: quantidade atual com e sem login.</li>
+          <li><strong>FRONT-19 — Integração</strong>: consumir a API exclusivamente via <code>fetch()</code>.</li>
+          <li><strong>FRONT-20 — Revisão responsiva</strong>: validar desktop e mobile.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="h3 section-title mb-3">Ordem recomendada de execução</h2>
+    <div class="card task-card">
+      <div class="card-body">
+        <ol class="mb-0">
+          <li><strong>Fase 1 — Fundação:</strong> Tech Lead cria arquitetura, conexão PDO, router, schema e padrão de resposta.</li>
+          <li><strong>Fase 2 — Domínio básico:</strong> Rogger, Diego e Elian implementam autenticação, produtos e categorias.</li>
+          <li><strong>Fase 3 — Carrinho:</strong> Bruno implementa visitante, usuário e fusão.</li>
+          <li><strong>Fase 4 — Checkout:</strong> Gustavo implementa endereços, pedidos, estoque e pagamento simulado.</li>
+          <li><strong>Fase 5 — Frontend:</strong> Mariana integra as telas conforme os endpoints forem estabilizados.</li>
+          <li><strong>Fase 6 — Administração:</strong> produtos, categorias, pedidos e autorização de admin.</li>
+          <li><strong>Fase 7 — Integração e revisão:</strong> fluxo completo e correção de contratos.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-5">
+    <h2 class="h3 section-title mb-3">Contrato mínimo de rotas</h2>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered bg-white align-middle">
+        <thead class="table-light"><tr><th>Método</th><th>Rota</th><th>Responsável</th><th>Acesso</th></tr></thead>
+        <tbody>
+          <tr><td>POST</td><td>/api/auth/register</td><td>Rogger</td><td>Público</td></tr>
+          <tr><td>POST</td><td>/api/auth/login</td><td>Rogger</td><td>Público</td></tr>
+          <tr><td>POST</td><td>/api/auth/logout</td><td>Rogger</td><td>Autenticado</td></tr>
+          <tr><td>GET</td><td>/api/products</td><td>Diego</td><td>Público</td></tr>
+          <tr><td>GET</td><td>/api/products/{id}</td><td>Diego</td><td>Público</td></tr>
+          <tr><td>GET</td><td>/api/categories</td><td>Elian</td><td>Público</td></tr>
+          <tr><td>GET</td><td>/api/cart</td><td>Bruno</td><td>Público</td></tr>
+          <tr><td>POST</td><td>/api/cart/items</td><td>Bruno</td><td>Público</td></tr>
+          <tr><td>PATCH</td><td>/api/cart/items/{id}</td><td>Bruno</td><td>Público</td></tr>
+          <tr><td>DELETE</td><td>/api/cart/items/{id}</td><td>Bruno</td><td>Público</td></tr>
+          <tr><td>GET/POST</td><td>/api/addresses</td><td>Rogger + Gustavo</td><td>Autenticado</td></tr>
+          <tr><td>POST</td><td>/api/orders</td><td>Gustavo</td><td>Autenticado</td></tr>
+          <tr><td>GET</td><td>/api/orders</td><td>Gustavo</td><td>Autenticado</td></tr>
+          <tr><td>GET</td><td>/api/orders/{id}</td><td>Gustavo</td><td>Dono/Admin</td></tr>
+          <tr><td>POST</td><td>/api/orders/{id}/pay</td><td>Gustavo</td><td>Dono</td></tr>
+          <tr><td>POST</td><td>/api/orders/{id}/cancel</td><td>Gustavo</td><td>Dono/Admin</td></tr>
+          <tr><td>POST/PUT/DELETE</td><td>/api/admin/products</td><td>Diego</td><td>Admin</td></tr>
+          <tr><td>POST/PUT/DELETE</td><td>/api/admin/categories</td><td>Elian</td><td>Admin</td></tr>
+          <tr><td>GET</td><td>/api/admin/orders</td><td>Gustavo</td><td>Admin</td></tr>
+          <tr><td>PATCH</td><td>/api/admin/orders/{id}/status</td><td>Gustavo</td><td>Admin</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h3 section-title mb-3">Definition of Done</h2>
+    <div class="card task-card">
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>Código está na branch correta e passou por revisão do Tech Lead.</li>
+          <li>Endpoint retorna JSON padronizado e código HTTP adequado.</li>
+          <li>Queries usam PDO com prepared statements.</li>
+          <li>Validação é feita no backend, não apenas no JavaScript.</li>
+          <li>Regra de negócio relevante está em Service.</li>
+          <li>Rotas privadas verificam autenticação e autorização.</li>
+          <li>Fluxo principal foi testado manualmente.</li>
+          <li>Frontend não calcula preço ou total como fonte de verdade.</li>
+          <li>Nenhum dado de cartão é solicitado ou armazenado.</li>
+          <li>README é atualizado quando houver nova configuração ou regra importante.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="border-top bg-white py-4">
+  <div class="container small text-muted">
+    Documento de planejamento — adaptação do projeto de referência para PHP puro + Bootstrap.
+  </div>
+</footer>
+</body>
+</html>
