@@ -4,12 +4,19 @@ function renderLayout() {
   const logged = Auth.isLoggedIn();
 
   const links = `
-    <li class="nav-item"><a class="nav-link ${active("catalog")}" href="index.html">Catálogo</a></li>
-    ${logged ? `
+<li class="nav-item"><a class="nav-link ${active("catalog")}" href="catalog.html">Catálogo</a></li>    ${
+    logged
+      ? `
       <li class="nav-item"><a class="nav-link ${active("orders")}" href="orders.html">Meus pedidos</a></li>
-      <li class="nav-item"><a class="nav-link ${active("profile")}" href="profile.html">Perfil</a></li>` : ""}
-    ${Auth.isAdmin() ? `
-      <li class="nav-item"><a class="nav-link ${active("admin")}" href="admin/products.html">Painel</a></li>` : ""}
+      <li class="nav-item"><a class="nav-link ${active("profile")}" href="profile.html">Perfil</a></li>`
+      : ""
+  }
+    ${
+      Auth.isAdmin()
+        ? `
+      <li class="nav-item"><a class="nav-link ${active("admin")}" href="admin/products.html">Painel</a></li>`
+        : ""
+    }
   `;
 
   const authButtons = logged
@@ -54,7 +61,7 @@ function renderLayout() {
           <div class="col-6 col-lg-3">
             <h6 class="fw-bold">Loja</h6>
             <ul class="list-unstyled small mb-0">
-              <li><a href="index.html">Catálogo</a></li>
+              <li><a href="catalog.html">Catálogo</a></li>
               <li><a href="cart.html">Carrinho</a></li>
               <li><a href="orders.html">Meus pedidos</a></li>
               <li><a href="profile.html">Perfil</a></li>
