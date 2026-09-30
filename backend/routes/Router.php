@@ -4,40 +4,57 @@ class Router
 {
     private array $routes = [];
 
-    public function get(string $path, callable $handler): void
-    {
-        $this->add('GET', $path, $handler);
+    public function get(
+        string $path,
+        callable $handler,
+        array $middleware = []
+    ): void {
+        $this->add('GET', $path, $handler, $middleware);
     }
 
-    public function post(string $path, callable $handler): void
-    {
-        $this->add('POST', $path, $handler);
+    public function post(
+        string $path,
+        callable $handler,
+        array $middleware = []
+    ): void {
+        $this->add('POST', $path, $handler, $middleware);
     }
 
-    public function put(string $path, callable $handler): void
-    {
-        $this->add('PUT', $path, $handler);
+    public function put(
+        string $path,
+        callable $handler,
+        array $middleware = []
+    ): void {
+        $this->add('PUT', $path, $handler, $middleware);
     }
 
-    public function patch(string $path, callable $handler): void
-    {
-        $this->add('PATCH', $path, $handler);
+    public function patch(
+        string $path,
+        callable $handler,
+        array $middleware = []
+    ): void {
+        $this->add('PATCH', $path, $handler, $middleware);
     }
 
-    public function delete(string $path, callable $handler): void
-    {
-        $this->add('DELETE', $path, $handler);
+    public function delete(
+        string $path,
+        callable $handler,
+        array $middleware = []
+    ): void {
+        $this->add('DELETE', $path, $handler, $middleware);
     }
 
     private function add(
         string $method,
         string $path,
-        callable $handler
+        callable $handler,
+        array $middleware
     ): void {
         $this->routes[] = [
             'method' => $method,
             'path' => $path,
-            'handler' => $handler
+            'handler' => $handler,
+            'middleware' => $middleware
         ];
     }
 
@@ -59,14 +76,19 @@ class Router
 
             $pattern = '#^' . $pattern . '$#';
 
-            if (preg_match($pattern, $uri, $matches)) {
-
-                array_shift($matches);
-
-                ($route['handler'])(...$matches);
-
-                return;
+            if (!preg_match($pattern, $uri, $matches)) {
+                continue;
             }
+
+            array_shift($matches);
+
+            foreach ($route['middleware'] as $middleware) {
+                $middleware();
+            }
+
+            ($route['handler'])(...$matches);
+
+            return;
         }
 
         jsonResponse('Rota não encontrada', 404);

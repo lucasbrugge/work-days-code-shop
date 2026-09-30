@@ -2,8 +2,12 @@
 
 require_once __DIR__ . '/Router.php';
 require_once __DIR__ . '/../helpers/response.php';
+
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
+
+require_once __DIR__ . '/../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../middleware/AdminMiddleware.php';
 
 $router = new Router();
 
@@ -35,22 +39,36 @@ $router->get(
 
 $router->post(
     '/api/auth/register',
-    fn () => NotImplementedController::handle('POST /api/auth/register')
+    fn () => NotImplementedController::handle(
+        'POST /api/auth/register'
+    )
 );
 
 $router->post(
     '/api/auth/login',
-    fn () => NotImplementedController::handle('POST /api/auth/login')
+    fn () => NotImplementedController::handle(
+        'POST /api/auth/login'
+    )
 );
 
 $router->post(
     '/api/auth/logout',
-    fn () => NotImplementedController::handle('POST /api/auth/logout')
+    fn () => NotImplementedController::handle(
+        'POST /api/auth/logout'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->get(
     '/api/auth/me',
-    fn () => NotImplementedController::handle('GET /api/auth/me')
+    fn () => NotImplementedController::handle(
+        'GET /api/auth/me'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 /*
@@ -61,12 +79,22 @@ $router->get(
 
 $router->get(
     '/api/profile',
-    fn () => NotImplementedController::handle('GET /api/profile')
+    fn () => NotImplementedController::handle(
+        'GET /api/profile'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->put(
     '/api/profile',
-    fn () => NotImplementedController::handle('PUT /api/profile')
+    fn () => NotImplementedController::handle(
+        'PUT /api/profile'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 /*
@@ -77,26 +105,42 @@ $router->put(
 
 $router->get(
     '/api/addresses',
-    fn () => NotImplementedController::handle('GET /api/addresses')
+    fn () => NotImplementedController::handle(
+        'GET /api/addresses'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->post(
     '/api/addresses',
-    fn () => NotImplementedController::handle('POST /api/addresses')
+    fn () => NotImplementedController::handle(
+        'POST /api/addresses'
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->put(
     '/api/addresses/{id}',
     fn ($id) => NotImplementedController::handle(
         "PUT /api/addresses/{$id}"
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->delete(
     '/api/addresses/{id}',
     fn ($id) => NotImplementedController::handle(
         "DELETE /api/addresses/{$id}"
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 /*
@@ -107,7 +151,9 @@ $router->delete(
 
 $router->get(
     '/api/products',
-    fn () => NotImplementedController::handle('GET /api/products')
+    fn () => NotImplementedController::handle(
+        'GET /api/products'
+    )
 );
 
 $router->get(
@@ -121,6 +167,10 @@ $router->get(
 |--------------------------------------------------------------------------
 | ADMIN - PRODUCTS
 |--------------------------------------------------------------------------
+|
+| O AdminMiddleware será integrado quando o fluxo de autenticação
+| estiver retornando o usuário autenticado.
+|
 */
 
 $router->post(
@@ -188,6 +238,12 @@ $router->delete(
 |--------------------------------------------------------------------------
 | CART
 |--------------------------------------------------------------------------
+|
+| O carrinho pode funcionar para visitante através do X-Guest-Token
+| ou para usuário autenticado através do user_id.
+|
+| A regra será implementada pelo CartService.
+|
 */
 
 $router->get(
@@ -228,41 +284,60 @@ $router->post(
     '/api/orders',
     fn () => NotImplementedController::handle(
         'POST /api/orders'
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->get(
     '/api/orders',
     fn () => NotImplementedController::handle(
         'GET /api/orders'
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->get(
     '/api/orders/{id}',
     fn ($id) => NotImplementedController::handle(
         "GET /api/orders/{$id}"
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->post(
     '/api/orders/{id}/pay',
     fn ($id) => NotImplementedController::handle(
         "POST /api/orders/{$id}/pay"
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 $router->post(
     '/api/orders/{id}/cancel',
     fn ($id) => NotImplementedController::handle(
         "POST /api/orders/{$id}/cancel"
-    )
+    ),
+    [
+        fn () => AuthMiddleware::requireAuth()
+    ]
 );
 
 /*
 |--------------------------------------------------------------------------
 | ADMIN - ORDERS
 |--------------------------------------------------------------------------
+|
+| O AdminMiddleware será integrado quando o fluxo de autenticação
+| estiver retornando o usuário autenticado.
+|
 */
 
 $router->get(

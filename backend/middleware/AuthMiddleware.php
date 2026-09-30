@@ -10,16 +10,20 @@ class AuthMiddleware
             return null;
         }
 
-        return trim(
-            substr($header, 7)
-        );
+        $token = trim(substr($header, 7));
+
+        if ($token === '') {
+            return null;
+        }
+
+        return $token;
     }
 
     public static function requireAuth(): string
     {
         $token = self::getToken();
 
-        if (!$token) {
+        if ($token === null) {
             jsonResponse(
                 'Token de autenticação obrigatório',
                 401
