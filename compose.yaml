@@ -1,4 +1,5 @@
 services:
+
   backend:
     build: ./backend
     ports:
@@ -11,29 +12,31 @@ services:
       DB_NAME: ${MYSQL_DATABASE}
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
-  #  frontend:
-  #    build: ./frontend
-  #    ports:
-  #      - "8080:80"
-  #    volumes:
-  #      - ./backend/data:/app/data
-  #    depends_on:
-  #      - db
-  #    environment:
-  #      DB_HOST: db
-  #      DB_PORT: 3306
-  #      DB_NAME: ${MYSQL_DATABASE}
-  #      DB_USER: ${MYSQL_USER}
-  #      DB_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - db
+
   db:
     image: mysql:8.0
+    restart: unless-stopped
+
     env_file:
       - .env
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+      - ./database/seeder.sql:/docker-entrypoint-initdb.d/02-seeder.sql
 
 volumes:
   mysql_data:

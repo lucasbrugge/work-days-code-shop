@@ -2,9 +2,9 @@ FROM php:8.3-cli
 
 WORKDIR /app
 
-COPY public/ public/
-COPY routes/ routes/
-COPY config/ config/
+RUN docker-php-ext-install pdo pdo_mysql
+
+COPY . .
 
 EXPOSE 80
 
