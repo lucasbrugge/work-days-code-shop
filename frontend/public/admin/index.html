@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Painel Administrativo</title>
+
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="./js/scripts.js" defer></script>
+</head>
+
+<body>
+
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<div id="loginPage">
+
+    <div class="login-box">
+
+        <div class="login-logo">
+            <h1>Painel Administrativo</h1>
+            <p>Acesse sua área administrativa</p>
+        </div>
+
+        <div id="loginError">
+            Usuário ou senha inválidos.
+        </div>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label for="username">Usuário</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="Digite seu usuário"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Digite sua senha"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="login-button"
+            >
+                Entrar
+            </button>
+
+        </form>
+
+        <div class="login-example">
+            <strong>Demonstração:</strong><br>
+            Usuário: admin<br>
+            Senha: 123456
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADMIN
+===================================================== -->
+
+<div id="adminPage">
+
+    <div class="admin-container">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-logo">
+                <span>ADMIN</span>
+            </div>
+
+            <nav class="menu">
+
+                <div class="menu-title">
+                    Principal
+                </div>
+
+                <a
+                    class="menu-item active"
+                    data-page="dashboard"
+                >
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+
+                <a
+                    class="menu-item"
+                    data-page="usuarios"
+                >
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">Usuários</span>
+                </a>
+                <a
+                    class="menu-item"
+                    data-page="produtos"
+                >
+                    <span class="menu-icon">📦</span>
+                    <span class="menu-text">Produtos</span>
+                </a>
+
+                <div class="menu-title">
+                    Configurações
+                </div>
+
+                <a
+                    class="menu-item"
+                    data-page="geral"
+                >
+                    <span class="menu-icon">⚙️</span>
+                    <span class="menu-text">Configurações Gerais</span>
+                </a>
+
+                <a
+                    class="menu-item"
+                    data-page="aparencia"
+                >
+                    <span class="menu-icon">🎨</span>
+                    <span class="menu-text">Aparência</span>
+                </a>
+
+                <a
+                    class="menu-item"
+                    data-page="seguranca"
+                >
+                    <span class="menu-icon">🔒</span>
+                    <span class="menu-text">Segurança</span>
+                </a>
+
+                <div class="menu-title">
+                    Sistema
+                </div>
+
+                <a
+                    class="menu-item"
+                    data-page="logs"
+                >
+                    <span class="menu-icon">📋</span>
+                    <span class="menu-text">Logs</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main">
+
+            <!-- HEADER -->
+
+            <header class="header">
+
+                <div class="header-left">
+
+                    <button
+                        class="toggle-menu"
+                        id="toggleMenu"
+                    >
+                        ☰
+                    </button>
+
+                    <div
+                        class="header-title"
+                        id="headerTitle"
+                    >
+                        Dashboard
+                    </div>
+
+                </div>
+
+                <div class="user-area">
+
+                    <span
+                        class="user-name"
+                        id="loggedUser"
+                    >
+                        Administrador
+                    </span>
+
+                    <div class="user-avatar">
+                        A
+                    </div>
+
+                    <button
+                        class="logout-button"
+                        id="logoutButton"
+                    >
+                        Sair
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- CONTENT -->
+
+            <section class="content">
+
+
+                <!-- =========================
+                     DASHBOARD
+                ========================== -->
+
+                <div
+                    class="page active"
+                    id="page-dashboard"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Dashboard</h2>
+
+                        <p>
+                            Visão geral do sistema administrativo.
+                        </p>
+
+                    </div>
+
+
+                    <div class="cards">
+
+                        <div class="card">
+
+                            <div class="card-title">
+                                Usuários
+                            </div>
+
+                            <div class="card-value">
+                                1.248
+                            </div>
+
+                            <div class="card-info">
+                                +8,5% este mês
+                            </div>
+
+                        </div>
+
+
+                        <div class="card">
+
+                            <div class="card-title">
+                                Acessos hoje
+                            </div>
+
+                            <div class="card-value">
+                                384
+                            </div>
+
+                            <div class="card-info">
+                                +12% hoje
+                            </div>
+
+                        </div>
+
+
+                        <div class="card">
+
+                            <div class="card-title">
+                                Pedidos
+                            </div>
+
+                            <div class="card-value">
+                                156
+                            </div>
+
+                            <div class="card-info">
+                                +4,2% esta semana
+                            </div>
+
+                        </div>
+
+
+                        <div class="card">
+
+                            <div class="card-title">
+                                Faturamento
+                            </div>
+
+                            <div class="card-value">
+                                R$ 18.450
+                            </div>
+
+                            <div class="card-info">
+                                +7,1% este mês
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Últimos usuários
+                            </h3>
+
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>E-mail</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>João Silva</td>
+                                    <td>joao@email.com</td>
+                                    <td>Administrador</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Maria Santos</td>
+                                    <td>maria@email.com</td>
+                                    <td>Editor</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Carlos Oliveira</td>
+                                    <td>carlos@email.com</td>
+                                    <td>Usuário</td>
+                                    <td>
+                                        <span class="status inactive">
+                                            Inativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     USUÁRIOS
+                ========================== -->
+
+                <div
+                    class="page"
+                    id="page-usuarios"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Usuários</h2>
+
+                        <p>
+                            Gerencie os usuários do sistema.
+                        </p>
+
+                    </div>
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Usuários cadastrados
+                            </h3>
+
+                            <button class="save-button">
+                                + Novo usuário
+                            </button>
+
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>E-mail</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>#001</td>
+                                    <td>João Silva</td>
+                                    <td>joao@email.com</td>
+                                    <td>Administrador</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>#002</td>
+                                    <td>Maria Santos</td>
+                                    <td>maria@email.com</td>
+                                    <td>Editor</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- produtos -->
+
+                <div
+                    class="page"
+                    id="page-produtos"
+                >
+
+                    <div class="page-produtos">
+
+                        <h2>Usuários</h2>
+
+                        <p>
+                            Gerencie os usuários do sistema.
+                        </p>
+
+                    </div>
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Usuários cadastrados
+                            </h3>
+
+                            <button class="save-button">
+                                + Novo usuário
+                            </button>
+
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>E-mail</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>#001</td>
+                                    <td>João Silva</td>
+                                    <td>joao@email.com</td>
+                                    <td>Administrador</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>#002</td>
+                                    <td>Maria Santos</td>
+                                    <td>maria@email.com</td>
+                                    <td>Editor</td>
+                                    <td>
+                                        <span class="status active">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- =========================
+                     CONFIGURAÇÕES GERAIS
+                ========================== -->
+
+                <div
+                    class="page"
+                    id="page-geral"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Configurações Gerais</h2>
+
+                        <p>
+                            Configure informações básicas do sistema.
+                        </p>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <div class="settings-grid">
+
+                            <div class="setting">
+
+                                <label>
+                                    Nome do sistema
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value="Meu Sistema"
+                                >
+
+                            </div>
+
+
+                            <div class="setting">
+
+                                <label>
+                                    E-mail administrativo
+                                </label>
+
+                                <input
+                                    type="email"
+                                    value="admin@empresa.com"
+                                >
+
+                            </div>
+
+
+                            <div class="setting">
+
+                                <label>
+                                    Telefone
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value="(11) 99999-9999"
+                                >
+
+                            </div>
+
+
+                            <div class="setting">
+
+                                <label>
+                                    Fuso horário
+                                </label>
+
+                                <select>
+
+                                    <option>
+                                        America/Sao_Paulo
+                                    </option>
+
+                                    <option>
+                                        America/New_York
+                                    </option>
+
+                                    <option>
+                                        UTC
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <button class="save-button">
+                            Salvar configurações
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     APARÊNCIA
+                ========================== -->
+
+                <div
+                    class="page"
+                    id="page-aparencia"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Aparência</h2>
+
+                        <p>
+                            Personalize a aparência do painel.
+                        </p>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <div class="setting">
+
+                            <label>
+                                Nome exibido no menu
+                            </label>
+
+                            <input
+                                type="text"
+                                value="ADMIN"
+                            >
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Tema
+                            </label>
+
+                            <select>
+
+                                <option>
+                                    Claro
+                                </option>
+
+                                <option>
+                                    Escuro
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Descrição do sistema
+                            </label>
+
+                            <textarea>
+Painel administrativo do sistema.
+                            </textarea>
+
+                        </div>
+
+
+                        <button class="save-button">
+                            Salvar aparência
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     SEGURANÇA
+                ========================== -->
+
+                <div
+                    class="page"
+                    id="page-seguranca"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Segurança</h2>
+
+                        <p>
+                            Configure opções de segurança.
+                        </p>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <div class="setting">
+
+                            <label>
+                                Tempo de sessão
+                            </label>
+
+                            <select>
+
+                                <option>
+                                    30 minutos
+                                </option>
+
+                                <option>
+                                    1 hora
+                                </option>
+
+                                <option>
+                                    4 horas
+                                </option>
+
+                                <option>
+                                    24 horas
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Tentativas máximas de login
+                            </label>
+
+                            <input
+                                type="number"
+                                value="5"
+                            >
+
+                        </div>
+
+
+                        <button class="save-button">
+                            Salvar segurança
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     LOGS
+                ========================== -->
+
+                <div
+                    class="page"
+                    id="page-logs"
+                >
+
+                    <div class="page-title">
+
+                        <h2>Logs do sistema</h2>
+
+                        <p>
+                            Histórico de atividades administrativas.
+                        </p>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Usuário</th>
+                                    <th>Ação</th>
+                                    <th>IP</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>30/09/2026 17:10</td>
+                                    <td>admin</td>
+                                    <td>Login realizado</td>
+                                    <td>192.168.0.10</td>
+                                </tr>
+
+                                <tr>
+                                    <td>30/09/2026 16:50</td>
+                                    <td>admin</td>
+                                    <td>Configuração alterada</td>
+                                    <td>192.168.0.10</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>
