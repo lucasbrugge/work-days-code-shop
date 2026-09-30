@@ -1,0 +1,12 @@
+# Root password (keep this secure)
+MYSQL_ROOT_PASSWORD=
+
+# Database to create automatically on container startup
+MYSQL_DATABASE=
+
+# Non-root application user credentials
+MYSQL_USER=
+MYSQL_PASSWORD=
+
+# Port binding (Host:Container)
+MYSQL_PORT=3306
