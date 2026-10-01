@@ -2,7 +2,7 @@
 MYSQL_ROOT_PASSWORD=
 
 # Database to create automatically on container startup
-MYSQL_DATABASE=
+MYSQL_DATABASE=work_days
 
 # Non-root application user credentials
 MYSQL_USER=
