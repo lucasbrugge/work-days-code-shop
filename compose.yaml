@@ -37,6 +37,12 @@ services:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
       - ./database/seeder.sql:/docker-entrypoint-initdb.d/02-seeder.sql
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:
