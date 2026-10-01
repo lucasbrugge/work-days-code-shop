@@ -116,4 +116,18 @@ class AuthService
             ]
         ];
     }
+
+    public function logout(string $token): void
+    {
+        $tokenHash = hash('sha256', $token);
+
+        $stmt = $this->db->prepare("
+            DELETE FROM auth_tokens
+            WHERE token_hash = :token_hash
+        ");
+
+        $stmt->execute([
+            'token_hash' => $tokenHash
+        ]);
+    }
 }

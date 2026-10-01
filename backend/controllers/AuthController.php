@@ -68,4 +68,22 @@ class AuthController
 
         jsonResponse($user);
     }
+
+    public static function logout(): never
+    {
+        $token = AuthMiddleware::getToken();
+
+        if ($token === null) {
+            jsonResponse(
+                'Token de autenticação obrigatório',
+                401
+            );
+        }
+
+        self::getService()->logout($token);
+
+        jsonResponse([
+            'message' => 'Logout realizado com sucesso'
+        ]);
+    }
 }

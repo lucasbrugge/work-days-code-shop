@@ -51,9 +51,7 @@ $router->post(
 
 $router->post(
     '/api/auth/logout',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/logout'
-    ),
+    fn () => AuthController::logout(),
     [
         fn () => AuthMiddleware::requireAuth()
     ]
