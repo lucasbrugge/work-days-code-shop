@@ -5,6 +5,7 @@ require_once __DIR__ . '/../helpers/response.php';
 
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
+require_once __DIR__ . '/../controllers/ProductController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -151,16 +152,12 @@ $router->delete(
 
 $router->get(
     '/api/products',
-    fn () => NotImplementedController::handle(
-        'GET /api/products'
-    )
+    fn () => ProductController::index()
 );
 
 $router->get(
     '/api/products/{id}',
-    fn ($id) => NotImplementedController::handle(
-        "GET /api/products/{$id}"
-    )
+    fn ($id) => ProductController::show($id)
 );
 
 /*
@@ -173,25 +170,29 @@ $router->get(
 |
 */
 
+$router->get(
+    '/api/admin/products',
+    fn () => ProductController::adminIndex()
+);
+
+$router->get(
+    '/api/admin/products/{id}',
+    fn ($id) => ProductController::adminShow($id)
+);
+
 $router->post(
     '/api/admin/products',
-    fn () => NotImplementedController::handle(
-        'POST /api/admin/products'
-    )
+    fn () => ProductController::store()
 );
 
 $router->put(
     '/api/admin/products/{id}',
-    fn ($id) => NotImplementedController::handle(
-        "PUT /api/admin/products/{$id}"
-    )
+    fn ($id) => ProductController::update($id)
 );
 
 $router->delete(
     '/api/admin/products/{id}',
-    fn ($id) => NotImplementedController::handle(
-        "DELETE /api/admin/products/{$id}"
-    )
+    fn ($id) => ProductController::destroy($id)
 );
 
 /*
