@@ -3,13 +3,33 @@
 require_once __DIR__ . '/Router.php';
 require_once __DIR__ . '/../helpers/response.php';
 
+require_once __DIR__ . '/../config/database.php';
+
+require_once __DIR__ . '/../models/User.php';
+
+require_once __DIR__ . '/../validators/AuthValidator.php';
+require_once __DIR__ . '/../services/AuthService.php';
+
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
+require_once __DIR__ . '/../controllers/AuthController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
 
 $router = new Router();
+
+$pdo = Database::getConnection();
+
+$userModel = new User($pdo);
+
+$authService = new AuthService(
+    $userModel
+);
+
+$authController = new AuthController(
+    $authService
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -39,9 +59,27 @@ $router->get(
 
 $router->post(
     '/api/auth/register',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/register'
-    )
+
+    function () use ($authController): void {
+
+        $body = file_get_contents('php://input');
+
+        $data = json_decode(
+            $body,
+            true
+        );
+
+        if (!is_array($data)) {
+            jsonResponse(
+                [
+                    'message' => 'JSON inválido.'
+                ],
+                400
+            );
+        }
+
+        $authController->register($data);
+    }
 );
 
 $router->post(
