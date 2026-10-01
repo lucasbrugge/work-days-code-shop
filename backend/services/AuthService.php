@@ -69,12 +69,18 @@ class AuthService
         return $user;
     }
 
-    public function login(string $email, string $password): array
+    public function login(
+        string $email,
+        string $password
+    ): array
     {
-        $email = trim($email);
+        $email = strtolower(
+        trim($email)
+        );
 
-        $user = $this->userModel->findByEmail($email);
-
+        $user = $this->userModel->findByEmail(
+            $email
+        );
         if (
             $user === false ||
             !password_verify($password, $user['password_hash'])
