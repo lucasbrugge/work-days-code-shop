@@ -7,12 +7,12 @@
  */
 
 const API_CONFIG = {
-    BASE_URL: "http://localhost:3000/api",
+    BASE_URL: "http://localhost:8000/api/admin",
 
     ENDPOINTS: {
         login: "/login",
-        usuarios: "/usuarios",
-        produtos: "/produtos"
+        usuarios: "/users",
+        produtos: "/products"
     }
 };
 
