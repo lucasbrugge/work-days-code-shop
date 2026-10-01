@@ -6,12 +6,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const button = document.getElementById("login-button");
 
+  const params = new URLSearchParams(window.location.search);
+    if (
+    params.get("cadastro") === "sucesso"
+    ) {
+
+    alert.textContent =
+        "Conta criada com sucesso. Faça login para continuar.";
+
+    alert.classList.remove(
+        "d-none"
+    );
+
+    alert.classList.remove(
+        "alert-danger"
+    );
+
+    alert.classList.add(
+        "alert-success"
+    );
+
+    }
+
 
   form.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
     alert.classList.add("d-none");
+
+    alert.classList.remove("alert-success");
+
+    alert.classList.add("alert-danger");
 
     const email = form.email.value.trim();
 

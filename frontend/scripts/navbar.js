@@ -78,10 +78,37 @@ function renderLayout() {
       </div>
     </footer>`;
 
-  document.getElementById("btn-logout")?.addEventListener("click", () => {
-    Auth.clear();
-    window.location.href = "index.html";
-  });
+  document.getElementById("btn-logout")?.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await api(
+          "/auth/logout",
+          {
+            method: "POST"
+          }
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Erro ao realizar logout:",
+          error
+        );
+
+      } finally {
+
+        Auth.clear();
+
+        window.location.href =
+          "index.html";
+
+      }
+
+    }
+  );
 }
 
 document.addEventListener("DOMContentLoaded", renderLayout);
