@@ -3,65 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Painel Administrativo</title>
-
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/scripts.js" defer></script>
+    <link rel="stylesheet" href="css/admin.css">
 </head>
-
 <body>
 
-<!-- =====================================================
-     LOGIN
-===================================================== -->
-
 <div id="loginPage">
-
     <div class="login-box">
-
         <div class="login-logo">
             <h1>Painel Administrativo</h1>
             <p>Acesse sua área administrativa</p>
         </div>
 
-        <div id="loginError">
+        <div id="loginError" class="login-error">
             Usuário ou senha inválidos.
         </div>
 
         <form id="loginForm">
-
             <div class="form-group">
                 <label for="username">Usuário</label>
-
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="Digite seu usuário"
-                    autocomplete="username"
-                    required
-                >
+                <input type="text" id="username" placeholder="Digite seu usuário"
+                       autocomplete="username" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Senha</label>
-
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Digite sua senha"
-                    autocomplete="current-password"
-                    required
-                >
+                <input type="password" id="password" placeholder="Digite sua senha"
+                       autocomplete="current-password" required>
             </div>
 
-            <button
-                type="submit"
-                class="login-button"
-            >
-                Entrar
-            </button>
-
+            <button type="submit" class="login-button">Entrar</button>
         </form>
 
         <div class="login-example">
@@ -69,798 +40,284 @@
             Usuário: admin<br>
             Senha: 123456
         </div>
-
     </div>
-
 </div>
 
-
-<!-- =====================================================
-     ADMIN
-===================================================== -->
-
 <div id="adminPage">
-
     <div class="admin-container">
 
-        <!-- SIDEBAR -->
-
         <aside class="sidebar" id="sidebar">
-
             <div class="sidebar-logo">
                 <span>ADMIN</span>
+                <span>⚙</span>
             </div>
 
             <nav class="menu">
-
-                <div class="menu-title">
-                    Principal
-                </div>
-
-                <a
-                    class="menu-item active"
-                    data-page="dashboard"
-                >
-                    <span class="menu-icon">📊</span>
-                    <span class="menu-text">Dashboard</span>
+                <div class="menu-title">Principal</div>
+                <a href="#" class="menu-item active" data-page="dashboard">
+                    <span class="menu-icon">📊</span><span class="menu-text">Dashboard</span>
                 </a>
-
-                <a
-                    class="menu-item"
-                    data-page="usuarios"
-                >
-                    <span class="menu-icon">👥</span>
-                    <span class="menu-text">Usuários</span>
+                <a href="#" class="menu-item" data-page="usuarios">
+                    <span class="menu-icon">👥</span><span class="menu-text">Usuários</span>
                 </a>
-                <a
-                    class="menu-item"
-                    data-page="produtos"
-                >
-                    <span class="menu-icon">📦</span>
-                    <span class="menu-text">Produtos</span>
+                <a href="#" class="menu-item" data-page="produtos">
+                    <span class="menu-icon">📦</span><span class="menu-text">Produtos</span>
                 </a>
-
-                <div class="menu-title">
-                    Configurações
-                </div>
-
-                <a
-                    class="menu-item"
-                    data-page="geral"
-                >
-                    <span class="menu-icon">⚙️</span>
-                    <span class="menu-text">Configurações Gerais</span>
-                </a>
-
-                <a
-                    class="menu-item"
-                    data-page="aparencia"
-                >
-                    <span class="menu-icon">🎨</span>
-                    <span class="menu-text">Aparência</span>
-                </a>
-
-                <a
-                    class="menu-item"
-                    data-page="seguranca"
-                >
-                    <span class="menu-icon">🔒</span>
-                    <span class="menu-text">Segurança</span>
-                </a>
-
-                <div class="menu-title">
-                    Sistema
-                </div>
-
-                <a
-                    class="menu-item"
-                    data-page="logs"
-                >
-                    <span class="menu-icon">📋</span>
-                    <span class="menu-text">Logs</span>
-                </a>
-
             </nav>
-
         </aside>
 
-
-        <!-- MAIN -->
-
         <main class="main">
-
-            <!-- HEADER -->
-
             <header class="header">
-
                 <div class="header-left">
-
-                    <button
-                        class="toggle-menu"
-                        id="toggleMenu"
-                    >
-                        ☰
-                    </button>
-
-                    <div
-                        class="header-title"
-                        id="headerTitle"
-                    >
-                        Dashboard
-                    </div>
-
+                    <button class="toggle-menu" id="toggleMenu" aria-label="Abrir menu">☰</button>
+                    <div class="header-title" id="headerTitle">Dashboard</div>
                 </div>
 
                 <div class="user-area">
-
-                    <span
-                        class="user-name"
-                        id="loggedUser"
-                    >
-                        Administrador
-                    </span>
-
-                    <div class="user-avatar">
-                        A
-                    </div>
-
-                    <button
-                        class="logout-button"
-                        id="logoutButton"
-                    >
-                        Sair
-                    </button>
-
+                    <span class="user-name" id="loggedUser">Administrador</span>
+                    <div class="user-avatar">A</div>
+                    <button class="logout-button" id="logoutButton">Sair</button>
                 </div>
-
             </header>
-
-
-            <!-- CONTENT -->
 
             <section class="content">
 
-
-                <!-- =========================
-                     DASHBOARD
-                ========================== -->
-
-                <div
-                    class="page active"
-                    id="page-dashboard"
-                >
-
+                <div class="page active" id="page-dashboard">
                     <div class="page-title">
-
                         <h2>Dashboard</h2>
-
-                        <p>
-                            Visão geral do sistema administrativo.
-                        </p>
-
+                        <p>Visão geral do sistema administrativo.</p>
                     </div>
-
 
                     <div class="cards">
-
                         <div class="card">
-
-                            <div class="card-title">
-                                Usuários
-                            </div>
-
-                            <div class="card-value">
-                                1.248
-                            </div>
-
-                            <div class="card-info">
-                                +8,5% este mês
-                            </div>
-
+                            <div class="card-title">Usuários</div>
+                            <div class="card-value">1.248</div>
+                            <div class="card-info">+8,5% este mês</div>
                         </div>
-
-
                         <div class="card">
-
-                            <div class="card-title">
-                                Acessos hoje
-                            </div>
-
-                            <div class="card-value">
-                                384
-                            </div>
-
-                            <div class="card-info">
-                                +12% hoje
-                            </div>
-
+                            <div class="card-title">Acessos hoje</div>
+                            <div class="card-value">384</div>
+                            <div class="card-info">+12% hoje</div>
                         </div>
-
-
                         <div class="card">
-
-                            <div class="card-title">
-                                Pedidos
-                            </div>
-
-                            <div class="card-value">
-                                156
-                            </div>
-
-                            <div class="card-info">
-                                +4,2% esta semana
-                            </div>
-
+                            <div class="card-title">Pedidos</div>
+                            <div class="card-value">156</div>
+                            <div class="card-info">+4,2% esta semana</div>
                         </div>
-
-
                         <div class="card">
-
-                            <div class="card-title">
-                                Faturamento
-                            </div>
-
-                            <div class="card-value">
-                                R$ 18.450
-                            </div>
-
-                            <div class="card-info">
-                                +7,1% este mês
-                            </div>
-
+                            <div class="card-title">Faturamento</div>
+                            <div class="card-value">R$ 18.450</div>
+                            <div class="card-info">+7,1% este mês</div>
                         </div>
-
                     </div>
 
-
                     <div class="panel">
-
                         <div class="panel-header">
-
-                            <h3>
-                                Últimos usuários
-                            </h3>
-
+                            <h3>Últimos usuários</h3>
                         </div>
-
                         <table>
-
                             <thead>
-
                                 <tr>
                                     <th>Nome</th>
                                     <th>E-mail</th>
                                     <th>Perfil</th>
                                     <th>Status</th>
                                 </tr>
-
                             </thead>
-
                             <tbody>
-
                                 <tr>
                                     <td>João Silva</td>
                                     <td>joao@email.com</td>
                                     <td>Administrador</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
+                                    <td><span class="status active">Ativo</span></td>
                                 </tr>
-
                                 <tr>
                                     <td>Maria Santos</td>
                                     <td>maria@email.com</td>
                                     <td>Editor</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
+                                    <td><span class="status active">Ativo</span></td>
                                 </tr>
-
                                 <tr>
                                     <td>Carlos Oliveira</td>
                                     <td>carlos@email.com</td>
                                     <td>Usuário</td>
-                                    <td>
-                                        <span class="status inactive">
-                                            Inativo
-                                        </span>
-                                    </td>
+                                    <td><span class="status inactive">Inativo</span></td>
                                 </tr>
-
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
 
-
-                <!-- =========================
-                     USUÁRIOS
-                ========================== -->
-
-                <div
-                    class="page"
-                    id="page-usuarios"
-                >
-
+                <div class="page" id="page-usuarios">
                     <div class="page-title">
-
                         <h2>Usuários</h2>
-
-                        <p>
-                            Gerencie os usuários do sistema.
-                        </p>
-
+                        <p>Gerencie os usuários do sistema.</p>
                     </div>
-
                     <div class="panel">
-
                         <div class="panel-header">
-
-                            <h3>
-                                Usuários cadastrados
-                            </h3>
-
-                            <button class="save-button">
-                                + Novo usuário
-                            </button>
-
+                            <h3>Usuários cadastrados</h3>
+                            <button class="save-button" id="newUserButton">+ Novo usuário</button>
                         </div>
-
                         <table>
-
                             <thead>
-
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>E-mail</th>
-                                    <th>Perfil</th>
-                                    <th>Status</th>
+                                    <th>ID</th><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th>
                                 </tr>
-
                             </thead>
-
-                            <tbody>
-
+                            <tbody id="usersTableBody">
                                 <tr>
-                                    <td>#001</td>
-                                    <td>João Silva</td>
-                                    <td>joao@email.com</td>
-                                    <td>Administrador</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
+                                    <td>#001</td><td>João Silva</td><td>joao@email.com</td>
+                                    <td>Administrador</td><td><span class="status active">Ativo</span></td>
                                 </tr>
-
                                 <tr>
-                                    <td>#002</td>
-                                    <td>Maria Santos</td>
-                                    <td>maria@email.com</td>
-                                    <td>Editor</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
+                                    <td>#002</td><td>Maria Santos</td><td>maria@email.com</td>
+                                    <td>Editor</td><td><span class="status active">Ativo</span></td>
                                 </tr>
-
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
 
-
-                <!-- produtos -->
-
-                <div
-                    class="page"
-                    id="page-produtos"
-                >
-
-                    <div class="page-produtos">
-
-                        <h2>Produtos</h2>
-
-                        <p>
-                            Gerencie os produtos do catálogo musical.
-                        </p>
-
-                    </div>
-
-                    <div class="panel">
-
-                        <div class="panel-header">
-
-                            <h3>
-                                Produtos cadastrados
-                            </h3>
-
-                            <a href="../../admin/products.html" class="save-button" style="text-decoration: none; display: inline-block;">
-                                + Abrir Tela Completa de Cadastro
-                            </a>
-
-                        </div>
-
-                        <table>
-
-                            <thead>
-
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Categoria</th>
-                                    <th>Preço</th>
-                                    <th>Status</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                <tr>
-                                    <td>#001</td>
-                                    <td>Pink Floyd - The Dark Side of the Moon</td>
-                                    <td>Vinil</td>
-                                    <td>R$ 189,90</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>#002</td>
-                                    <td>Michael Jackson - Thriller</td>
-                                    <td>Vinil</td>
-                                    <td>R$ 159,90</td>
-                                    <td>
-                                        <span class="status active">
-                                            Ativo
-                                        </span>
-                                    </td>
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                <!-- =========================
-                     CONFIGURAÇÕES GERAIS
-                ========================== -->
-
-                <div
-                    class="page"
-                    id="page-geral"
-                >
-
-                    <div class="page-title">
-
+<div class="page-title">
                         <h2>Configurações Gerais</h2>
-
-                        <p>
-                            Configure informações básicas do sistema.
-                        </p>
-
+                        <p>Configure informações básicas do sistema.</p>
                     </div>
-
-
                     <div class="panel">
-
-                        <div class="settings-grid">
-
-                            <div class="setting">
-
-                                <label>
-                                    Nome do sistema
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value="Meu Sistema"
-                                >
-
+                        <form id="generalSettingsForm">
+                            <div class="settings-grid">
+                                <div class="setting">
+                                    <label for="systemName">Nome do sistema</label>
+                                    <input id="systemName" type="text" value="Meu Sistema">
+                                </div>
+                                <div class="setting">
+                                    <label for="adminEmail">E-mail administrativo</label>
+                                    <input id="adminEmail" type="email" value="admin@empresa.com">
+                                </div>
+                                <div class="setting">
+                                    <label for="phone">Telefone</label>
+                                    <input id="phone" type="text" value="(11) 99999-9999">
+                                </div>
+                                <div class="setting">
+                                    <label for="timezone">Fuso horário</label>
+                                    <select id="timezone">
+                                        <option>America/Sao_Paulo</option>
+                                        <option>America/New_York</option>
+                                        <option>UTC</option>
+                                    </select>
+                                </div>
                             </div>
-
-
-                            <div class="setting">
-
-                                <label>
-                                    E-mail administrativo
-                                </label>
-
-                                <input
-                                    type="email"
-                                    value="admin@empresa.com"
-                                >
-
-                            </div>
-
-
-                            <div class="setting">
-
-                                <label>
-                                    Telefone
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value="(11) 99999-9999"
-                                >
-
-                            </div>
-
-
-                            <div class="setting">
-
-                                <label>
-                                    Fuso horário
-                                </label>
-
-                                <select>
-
-                                    <option>
-                                        America/Sao_Paulo
-                                    </option>
-
-                                    <option>
-                                        America/New_York
-                                    </option>
-
-                                    <option>
-                                        UTC
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-                        </div>
-
-                        <button class="save-button">
-                            Salvar configurações
-                        </button>
-
+                            <button class="save-button" type="submit">Salvar configurações</button>
+                        </form>
                     </div>
-
                 </div>
 
-
-                <!-- =========================
-                     APARÊNCIA
-                ========================== -->
-
-                <div
-                    class="page"
-                    id="page-aparencia"
-                >
-
-                    <div class="page-title">
-
+<div class="page-title">
                         <h2>Aparência</h2>
-
-                        <p>
-                            Personalize a aparência do painel.
-                        </p>
-
+                        <p>Personalize a aparência do painel.</p>
                     </div>
-
-
                     <div class="panel">
-
-                        <div class="setting">
-
-                            <label>
-                                Nome exibido no menu
-                            </label>
-
-                            <input
-                                type="text"
-                                value="ADMIN"
-                            >
-
-                        </div>
-
-
-                        <div class="setting">
-
-                            <label>
-                                Tema
-                            </label>
-
-                            <select>
-
-                                <option>
-                                    Claro
-                                </option>
-
-                                <option>
-                                    Escuro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="setting">
-
-                            <label>
-                                Descrição do sistema
-                            </label>
-
-                            <textarea>
-Painel administrativo do sistema.
-                            </textarea>
-
-                        </div>
-
-
-                        <button class="save-button">
-                            Salvar aparência
-                        </button>
-
+                        <form id="appearanceForm">
+                            <div class="setting">
+                                <label for="menuName">Nome exibido no menu</label>
+                                <input id="menuName" type="text" value="ADMIN">
+                            </div>
+                            <div class="setting">
+                                <label for="theme">Tema</label>
+                                <select id="theme">
+                                    <option value="light">Claro</option>
+                                    <option value="dark">Escuro</option>
+                                </select>
+                            </div>
+                            <div class="setting">
+                                <label for="description">Descrição do sistema</label>
+                                <textarea id="description">Painel administrativo do sistema.</textarea>
+                            </div>
+                            <button class="save-button" type="submit">Salvar aparência</button>
+                        </form>
                     </div>
-
                 </div>
 
-
-                <!-- =========================
-                     SEGURANÇA
-                ========================== -->
-
-                <div
-                    class="page"
-                    id="page-seguranca"
-                >
-
-                    <div class="page-title">
-
+<div class="page-title">
                         <h2>Segurança</h2>
-
-                        <p>
-                            Configure opções de segurança.
-                        </p>
-
+                        <p>Configure opções de segurança.</p>
                     </div>
-
-
                     <div class="panel">
-
-                        <div class="setting">
-
-                            <label>
-                                Tempo de sessão
-                            </label>
-
-                            <select>
-
-                                <option>
-                                    30 minutos
-                                </option>
-
-                                <option>
-                                    1 hora
-                                </option>
-
-                                <option>
-                                    4 horas
-                                </option>
-
-                                <option>
-                                    24 horas
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="setting">
-
-                            <label>
-                                Tentativas máximas de login
-                            </label>
-
-                            <input
-                                type="number"
-                                value="5"
-                            >
-
-                        </div>
-
-
-                        <button class="save-button">
-                            Salvar segurança
-                        </button>
-
+                        <form id="securityForm">
+                            <div class="setting">
+                                <label for="sessionTime">Tempo de sessão</label>
+                                <select id="sessionTime">
+                                    <option>30 minutos</option>
+                                    <option>1 hora</option>
+                                    <option>4 horas</option>
+                                    <option>24 horas</option>
+                                </select>
+                            </div>
+                            <div class="setting">
+                                <label for="maxAttempts">Tentativas máximas de login</label>
+                                <input id="maxAttempts" type="number" value="5" min="1">
+                            </div>
+                            <button class="save-button" type="submit">Salvar segurança</button>
+                        </form>
                     </div>
+                </div>
 
+<div class="page-title">
+                        <h2>Logs do sistema</h2>
+                        <p>Histórico de atividades administrativas.</p>
+                    </div>
+                    <div class="panel">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th><th>Usuário</th><th>Ação</th><th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <tr>
+                                    <td>30/09/2026 17:10</td><td>admin</td>
+                                    <td>Login realizado</td><td>192.168.0.10</td>
+                                </tr>
+                                <tr>
+                                    <td>30/09/2026 16:50</td><td>admin</td>
+                                    <td>Configuração alterada</td><td>192.168.0.10</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
 
-                <!-- =========================
-                     LOGS
-                ========================== -->
-
-                <div
-                    class="page"
-                    id="page-logs"
-                >
-
+                <div class="page" id="page-produtos">
                     <div class="page-title">
-
-                        <h2>Logs do sistema</h2>
-
-                        <p>
-                            Histórico de atividades administrativas.
-                        </p>
-
+                        <h2>Produtos</h2>
+                        <p>Cadastre e acompanhe os produtos do sistema.</p>
                     </div>
-
-
                     <div class="panel">
-
+                        <div class="panel-header">
+                            <h3>Produtos cadastrados</h3>
+                            <button class="save-button" id="newProductButton" type="button">+ Novo produto</button>
+                        </div>
                         <table>
-
                             <thead>
-
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Usuário</th>
-                                    <th>Ação</th>
-                                    <th>IP</th>
-                                </tr>
-
+                                <tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th></tr>
                             </thead>
-
-                            <tbody>
-
-                                <tr>
-                                    <td>30/09/2026 17:10</td>
-                                    <td>admin</td>
-                                    <td>Login realizado</td>
-                                    <td>192.168.0.10</td>
-                                </tr>
-
-                                <tr>
-                                    <td>30/09/2026 16:50</td>
-                                    <td>admin</td>
-                                    <td>Configuração alterada</td>
-                                    <td>192.168.0.10</td>
-                                </tr>
-
+                            <tbody id="productsTableBody">
+                                <tr><td>PROD-001</td><td>Produto demonstrativo A</td><td>Geral</td><td>R$ 49,90</td><td>25</td><td><span class="status active">Ativo</span></td></tr>
+                                <tr><td>PROD-002</td><td>Produto demonstrativo B</td><td>Acessórios</td><td>R$ 89,00</td><td>8</td><td><span class="status active">Ativo</span></td></tr>
+                                <tr><td>PROD-003</td><td>Produto demonstrativo C</td><td>Geral</td><td>R$ 19,90</td><td>0</td><td><span class="status inactive">Sem estoque</span></td></tr>
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
 
             </section>
-
         </main>
-
     </div>
-
 </div>
 
+<script src="js/login.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/produtos.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>
