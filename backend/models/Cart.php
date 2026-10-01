@@ -81,4 +81,108 @@ class Cart
 
         return $stmt->fetchAll();
     }
+
+    public function findItem(int $cartId, int $productId): array|false
+    {
+        $sql = "
+        SELECT
+            id,
+            cart_id,
+            product_id,
+            quantity
+        FROM cart_items
+        WHERE cart_id = :cart_id
+          AND product_id = :product_id
+        LIMIT 1
+    ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'cart_id' => $cartId,
+            'product_id' => $productId
+        ]);
+
+        return $stmt->fetch();
+    }
+
+    public function addItem(int $cartId, int $productId, int $quantity): int
+    {
+        $sql = "
+        INSERT INTO cart_items (
+            cart_id,
+            product_id,
+            quantity
+        ) VALUES (
+            :cart_id,
+            :product_id,
+            :quantity
+        )
+    ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'cart_id' => $cartId,
+            'product_id' => $productId,
+            'quantity' => $quantity
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function updateItemQuantity(int $itemId, int $quantity): bool
+    {
+        $sql = "
+        UPDATE cart_items
+        SET quantity = :quantity
+        WHERE id = :id
+    ";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'id' => $itemId,
+            'quantity' => $quantity
+        ]);
+    }
+
+    public function findItemById(int $cartId, int $itemId): array|false
+    {
+        $sql = "
+        SELECT
+            id,
+            cart_id,
+            product_id,
+            quantity
+        FROM cart_items
+        WHERE id = :item_id
+          AND cart_id = :cart_id
+        LIMIT 1
+    ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'item_id' => $itemId,
+            'cart_id' => $cartId
+        ]);
+
+        return $stmt->fetch();
+    }
+    public function deleteItem(int $cartId, int $itemId): bool
+    {
+        $sql = "
+        DELETE FROM cart_items
+        WHERE id = :item_id
+          AND cart_id = :cart_id
+    ";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'item_id' => $itemId,
+            'cart_id' => $cartId
+        ]);
+    }
 }

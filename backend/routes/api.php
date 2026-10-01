@@ -270,23 +270,17 @@ $router->get(
 );
 $router->post(
     '/api/cart/items',
-    fn() => NotImplementedController::handle(
-        'POST /api/cart/items'
-    )
+    fn() => CartController::store()
 );
 
 $router->patch(
     '/api/cart/items/{id}',
-    fn($id) => NotImplementedController::handle(
-        "PATCH /api/cart/items/{$id}"
-    )
+    fn($id) => CartController::update((int) $id)
 );
 
 $router->delete(
     '/api/cart/items/{id}',
-    fn($id) => NotImplementedController::handle(
-        "DELETE /api/cart/items/{$id}"
-    )
+    fn($id) => CartController::destroy((int) $id)
 );
 
 /*
