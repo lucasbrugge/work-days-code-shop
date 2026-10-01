@@ -1,7 +1,11 @@
 <?php
 
+require_once __DIR__ . '/../config/database.php';
+
 class AuthMiddleware
 {
+    private static ?array $user = null;
+
     public static function getToken(): ?string
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -19,7 +23,7 @@ class AuthMiddleware
         return $token;
     }
 
-    public static function requireAuth(): string
+    public static function requireAuth(): array
     {
         $token = self::getToken();
 
@@ -30,6 +34,51 @@ class AuthMiddleware
             );
         }
 
-        return $token;
+        $tokenHash = hash('sha256', $token);
+
+        try {
+            $db = Database::getConnection();
+
+            $stmt = $db->prepare("
+                SELECT
+                    users.id,
+                    users.name,
+                    users.email,
+                    users.role
+                FROM auth_tokens
+                INNER JOIN users
+                    ON users.id = auth_tokens.user_id
+                WHERE auth_tokens.token_hash = :token_hash
+                    AND auth_tokens.expires_at > NOW()
+                LIMIT 1
+            ");
+
+            $stmt->execute([
+                'token_hash' => $tokenHash
+            ]);
+
+            $user = $stmt->fetch();
+
+            if ($user === false) {
+                jsonResponse(
+                    'Token inválido ou expirado',
+                    401
+                );
+            }
+
+            self::$user = $user;
+
+            return $user;
+        } catch (PDOException $e) {
+            jsonResponse(
+                'Erro ao validar autenticação',
+                500
+            );
+        }
+    }
+
+    public static function user(): ?array
+    {
+        return self::$user;
     }
 }

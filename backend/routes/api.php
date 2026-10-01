@@ -6,6 +6,7 @@ require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
+require_once __DIR__ . '/../controllers/AuthController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -40,23 +41,17 @@ $router->get(
 
 $router->post(
     '/api/auth/register',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/register'
-    )
+    fn () => AuthController::register()
 );
 
 $router->post(
     '/api/auth/login',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/login'
-    )
+    fn () => AuthController::login()
 );
 
 $router->post(
     '/api/auth/logout',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/logout'
-    ),
+    fn () => AuthController::logout(),
     [
         fn () => AuthMiddleware::requireAuth()
     ]
@@ -64,9 +59,7 @@ $router->post(
 
 $router->get(
     '/api/auth/me',
-    fn () => NotImplementedController::handle(
-        'GET /api/auth/me'
-    ),
+    fn () => AuthController::me(),
     [
         fn () => AuthMiddleware::requireAuth()
     ]
@@ -164,35 +157,61 @@ $router->get(
 |--------------------------------------------------------------------------
 | ADMIN - PRODUCTS
 |--------------------------------------------------------------------------
-|
-| O AdminMiddleware será integrado quando o fluxo de autenticação
-| estiver retornando o usuário autenticado.
-|
 */
 
 $router->get(
     '/api/admin/products',
-    fn () => ProductController::adminIndex()
+    fn () => ProductController::adminIndex(),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->get(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::adminShow($id)
+    fn ($id) => ProductController::adminShow($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->post(
     '/api/admin/products',
-    fn () => ProductController::store()
+    fn () => ProductController::store(),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->put(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::update($id)
+    fn ($id) => ProductController::update($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->delete(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::destroy($id)
+    fn ($id) => ProductController::destroy($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 /*
@@ -239,12 +258,6 @@ $router->delete(
 |--------------------------------------------------------------------------
 | CART
 |--------------------------------------------------------------------------
-|
-| O carrinho pode funcionar para visitante através do X-Guest-Token
-| ou para usuário autenticado através do user_id.
-|
-| A regra será implementada pelo CartService.
-|
 */
 
 $router->get(
@@ -335,10 +348,6 @@ $router->post(
 |--------------------------------------------------------------------------
 | ADMIN - ORDERS
 |--------------------------------------------------------------------------
-|
-| O AdminMiddleware será integrado quando o fluxo de autenticação
-| estiver retornando o usuário autenticado.
-|
 */
 
 $router->get(
