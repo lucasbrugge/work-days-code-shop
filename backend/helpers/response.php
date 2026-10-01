@@ -2,15 +2,25 @@
 
 function jsonResponse(
     mixed $data,
-    int $status = 200
+    int $status = 200,
+    ?array $meta = null
 ): never {
     http_response_code($status);
 
-    echo json_encode([
+    $response = [
         'success' => $status < 400,
         'data' => $status < 400 ? $data : null,
         'error' => $status >= 400 ? $data : null
-    ], JSON_UNESCAPED_UNICODE);
+    ];
+
+    if ($meta !== null) {
+        $response['meta'] = $meta;
+    }
+
+    echo json_encode(
+        $response,
+        JSON_UNESCAPED_UNICODE
+    );
 
     exit;
 }
