@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../validators/AuthValidator.php';
 
 class AuthController
 {
@@ -39,26 +40,45 @@ class AuthController
         try {
             $data = getJsonBody();
 
-            $email = $data['email'] ?? '';
-            $password = $data['password'] ?? '';
+            $errors = AuthValidator::validateLogin($data);
 
-            if ($email === '' || $password === '') {
+            if (!empty($errors)) {
                 jsonResponse(
-                    'E-mail e senha são obrigatórios',
+                    [
+                        'message' => 'Dados inválidos.',
+                        'fields' => $errors
+                    ],
                     422
                 );
             }
 
             $result = self::getService()->login(
-                $email,
-                $password
+                $data['email'],
+                $data['password']
             );
 
             jsonResponse($result);
+
+        } catch (PDOException $e) {
+
+            jsonResponse(
+                'Erro ao realizar login',
+                500
+            );
+
         } catch (RuntimeException $e) {
-            jsonResponse($e->getMessage(), 401);
+
+            jsonResponse(
+                $e->getMessage(),
+                401
+            );
+
         } catch (Throwable $e) {
-            jsonResponse('Erro ao realizar login', 500);
+
+            jsonResponse(
+                'Erro ao realizar login',
+                500
+            );
         }
     }
 
