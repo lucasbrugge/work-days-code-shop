@@ -141,10 +141,12 @@ menuItems.forEach(function (item) {
 
     item.addEventListener("click", function (event) {
 
-        event.preventDefault();
-
         const pageName =
             item.getAttribute("data-page");
+
+        if (!pageName) return;
+
+        event.preventDefault();
 
         /* Remove ativo de todos */
 

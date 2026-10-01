@@ -14,7 +14,8 @@ function renderLayout() {
     ${
       Auth.isAdmin()
         ? `
-      <li class="nav-item"><a class="nav-link ${active("admin")}" href="admin/products.html">Painel</a></li>`
+      <li class="nav-item"><a class="nav-link ${active("admin")}" href="admin/index.html">Painel</a></li>
+      <li class="nav-item"><a class="nav-link" href="admin/products.html">Gerenciar Produtos</a></li>`
         : ""
     }
   `;

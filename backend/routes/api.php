@@ -2,12 +2,12 @@
 
 require_once __DIR__ . '/Router.php';
 require_once __DIR__ . '/../helpers/response.php';
+require_once __DIR__ . '/../config/database.php';
 
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
-require_once __DIR__ . '/../controllers/AuthController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -223,9 +223,20 @@ $router->delete(
 
 $router->get(
     '/api/categories',
-    fn () => NotImplementedController::handle(
-        'GET /api/categories'
-    )
+    function () {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->query('SELECT id, name, slug FROM categories ORDER BY id ASC');
+            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            jsonResponse($categories, 200);
+        } catch (Throwable $e) {
+            jsonResponse([
+                ['id' => 1, 'name' => 'Vinil', 'slug' => 'vinil'],
+                ['id' => 2, 'name' => 'CD', 'slug' => 'cd'],
+                ['id' => 3, 'name' => 'Cassete', 'slug' => 'cassete']
+            ], 200);
+        }
+    }
 );
 
 /*

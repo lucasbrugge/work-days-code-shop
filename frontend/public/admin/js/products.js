@@ -624,10 +624,19 @@ async function handleSaveProduct(e) {
     if (res.ok && json?.success) {
       success = true;
       responseData = json.data;
+      if (responseData) {
+        const existingIdx = AdminState.products.findIndex(p => p.id === responseData.id);
+        if (existingIdx !== -1) {
+          AdminState.products[existingIdx] = responseData;
+        } else {
+          AdminState.products.unshift(responseData);
+        }
+        saveLocalMockBackup();
+      }
     } else {
-      const errorMsg = json?.error || (res.status === 401 ? "Token não fornecido ou expirado." : res.status === 403 ? "Acesso permitido somente para administradores." : "Erro ao salvar produto.");
+      const errorMsg = json?.error || (res.status === 401 ? "Token de administrador não fornecido ou expirado." : res.status === 403 ? "Acesso permitido somente para administradores." : "Erro ao salvar produto.");
       if (alertBox) {
-        alertBox.textContent = errorMsg;
+        alertBox.innerHTML = `${escapeHtml(errorMsg)} <div class="mt-2"><button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('btnOpenAuthModal').click()"><i class="bi bi-key me-1"></i>Configurar Token / Login Rápido</button></div>`;
         alertBox.classList.remove("d-none");
       }
     }

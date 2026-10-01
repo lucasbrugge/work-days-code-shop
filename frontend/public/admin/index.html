@@ -63,6 +63,16 @@
                 <a href="#" class="menu-item" data-page="produtos">
                     <span class="menu-icon">📦</span><span class="menu-text">Produtos</span>
                 </a>
+                <a href="products.html" class="menu-item">
+                    <span class="menu-icon">🏷️</span><span class="menu-text">Gestão de Produtos</span>
+                </a>
+                <div class="menu-title">Loja Pública</div>
+                <a href="../index.html" class="menu-item">
+                    <span class="menu-icon">🏪</span><span class="menu-text">Início da Loja</span>
+                </a>
+                <a href="../catalog.html" class="menu-item">
+                    <span class="menu-icon">💿</span><span class="menu-text">Ver Catálogo</span>
+                </a>
             </nav>
         </aside>
 
@@ -74,6 +84,8 @@
                 </div>
 
                 <div class="user-area">
+                    <a href="../index.html" style="padding: 6px 12px; background: #eef2ff; color: #4338ca; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">🏪 Ir para a Loja</a>
+                    <a href="products.html" style="padding: 6px 12px; background: #e85d04; color: #fff; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">🏷️ CRUD Produtos</a>
                     <span class="user-name" id="loggedUser">Administrador</span>
                     <div class="user-avatar">A</div>
                     <button class="logout-button" id="logoutButton">Sair</button>
@@ -295,7 +307,10 @@
                     <div class="panel">
                         <div class="panel-header">
                             <h3>Produtos cadastrados</h3>
-                            <button class="save-button" id="newProductButton" type="button">+ Novo produto</button>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <a href="products.html" class="save-button" style="text-decoration:none; background: #e85d04;">📦 Abrir Painel Completo de Produtos</a>
+                                <button class="save-button" id="newProductButton" type="button">+ Novo produto rápido</button>
+                            </div>
                         </div>
                         <table>
                             <thead>

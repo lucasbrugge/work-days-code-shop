@@ -6,8 +6,9 @@ const pages = document.querySelectorAll(".page");
 
 menuItems.forEach(function (item) {
     item.addEventListener("click", function (event) {
-        event.preventDefault();
         const pageName = item.getAttribute("data-page");
+        if (!pageName) return;
+        event.preventDefault();
         menuItems.forEach(menu => menu.classList.remove("active"));
         item.classList.add("active");
         pages.forEach(page => page.classList.remove("active"));

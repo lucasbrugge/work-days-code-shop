@@ -5,7 +5,7 @@ require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../validators/AuthValidator.php';
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
-require_once __DIR__ . '/../core/Response.php';
+require_once __DIR__ . '/../helpers/response.php';
 
 $pdo = Database::getConnection();
 
