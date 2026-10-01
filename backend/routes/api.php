@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/Router.php';
 require_once __DIR__ . '/../helpers/response.php';
+require_once __DIR__ . '/../config/database.php';
 
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
@@ -227,9 +228,14 @@ $router->delete(
 
 $router->get(
     '/api/categories',
-    fn() => NotImplementedController::handle(
-        'GET /api/categories'
-    )
+    function () {
+        try {
+            $stmt = Database::getConnection()->query('SELECT id, name, slug FROM categories ORDER BY id ASC');
+            jsonResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (Throwable $e) {
+            jsonResponse('Erro ao listar categorias: ' . $e->getMessage(), 500);
+        }
+    }
 );
 
 /*
