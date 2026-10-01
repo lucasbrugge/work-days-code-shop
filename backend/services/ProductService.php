@@ -70,7 +70,7 @@ class ProductService
         ];
     }
 
-    
+
     public function getById(int $id, bool $onlyActive = true): array
     {
         if ($id <= 0) {
@@ -86,7 +86,7 @@ class ProductService
         return $product;
     }
 
-    
+
     public function create(array $data): array
     {
         $this->validateCreateData($data);
@@ -106,7 +106,7 @@ class ProductService
         return $this->getById($productId, false);
     }
 
-    
+
     public function update(int $id, array $data): array
     {
         if ($id <= 0) {
@@ -207,7 +207,7 @@ class ProductService
         ];
     }
 
-    
+
     private function validateCreateData(array $data): void
     {
         if (empty($data['name']) || mb_strlen(trim((string) $data['name'])) < 2 || mb_strlen(trim((string) $data['name'])) > 150) {
