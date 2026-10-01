@@ -1,82 +1,42 @@
-document.addEventListener("DOMContentLoaded", () => {
+const form = document.getElementById("login-form");
+const alertBox = document.getElementById("alert");
+const submit = document.getElementById("submit");
 
-  const form = document.getElementById("login-form");
+// Quem já está logado não precisa ver esta página
+if (Auth.isLoggedIn()) window.location.href = "index.html";
 
-  const alert = document.getElementById("login-alert");
+function showError(msg) {
+  const div = document.createElement("div");
+  div.className = "alert alert-danger";
+  div.textContent = msg; // textContent: nunca interpreta HTML vindo do servidor
+  alertBox.replaceChildren(div);
+}
 
-  const button = document.getElementById("login-button");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  alertBox.replaceChildren();
 
+  const email = form.email.value.trim();
+  const password = form.password.value;
+  if (!email || !password) return showError("Informe e-mail e senha.");
 
-  form.addEventListener("submit", async (event) => {
+  submit.disabled = true;
+  submit.textContent = "Entrando...";
+  try {
+    const body = { email, password };
+    // FRONT-09: envia o carrinho de visitante para o back fazer a fusão
+    if (CartToken.get()) body.guest_token = CartToken.get();
 
-    event.preventDefault();
+    const data = await api("/auth/login", { method: "POST", body });
+    Auth.save(data.token, data.user);
 
-    alert.classList.add("d-none");
-
-    const email = form.email.value.trim();
-
-    const password = form.password.value;
-
-
-    button.disabled = true;
-    button.textContent = "Entrando...";
-
-    try {
-
-      const response = await api(
-        "/auth/login",
-        {
-          method: "POST",
-
-          body: {
-            email,
-            password
-          }
-        }
-      );
-
-
-      const token = response.data.token;
-
-      const user = response.data.user;
-
-
-      Auth.set(
-        token,
-        user
-      );
-
-
-      window.location.href = "index.html";
-
-    } catch (error) {
-
-      if (
-        error instanceof ApiError &&
-        error.status === 422
-      ) {
-
-        UI.fieldErrors(
-          form,
-          error
-        );
-
-      }
-
-
-      alert.textContent =
-        error.message ||
-        "Não foi possível realizar o login.";
-
-      alert.classList.remove("d-none");
-
-    } finally {
-
-      button.disabled = false;
-      button.textContent = "Entrar";
-
-    }
-
-  });
-
+    const next = new URLSearchParams(location.search).get("next");
+    window.location.href =
+      next || (data.user.role === "admin" ? "public/admin/index.html" : "index.html");
+  } catch (err) {
+    showError(err.status === 401 ? "E-mail ou senha inválidos." : err.message);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Entrar";
+  }
 });
