@@ -4,6 +4,8 @@ require_once __DIR__ . '/../config/database.php';
 
 class AuthMiddleware
 {
+    private static ?array $user = null;
+
     public static function getToken(): ?string
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -64,6 +66,8 @@ class AuthMiddleware
                 );
             }
 
+            self::$user = $user;
+
             return $user;
         } catch (PDOException $e) {
             jsonResponse(
@@ -71,5 +75,10 @@ class AuthMiddleware
                 500
             );
         }
+    }
+
+    public static function user(): ?array
+    {
+        return self::$user;
     }
 }

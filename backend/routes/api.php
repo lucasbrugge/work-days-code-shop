@@ -61,9 +61,7 @@ $router->post(
 
 $router->get(
     '/api/auth/me',
-    fn () => NotImplementedController::handle(
-        'GET /api/auth/me'
-    ),
+    fn () => AuthController::me(),
     [
         fn () => AuthMiddleware::requireAuth()
     ]

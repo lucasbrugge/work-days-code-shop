@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../services/AuthService.php';
+require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class AuthController
 {
@@ -59,5 +60,12 @@ class AuthController
         } catch (Throwable $e) {
             jsonResponse('Erro ao realizar login', 500);
         }
+    }
+
+    public static function me(): never
+    {
+        $user = AuthMiddleware::user();
+
+        jsonResponse($user);
     }
 }
