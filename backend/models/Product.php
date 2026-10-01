@@ -11,7 +11,7 @@ class Product
         $this->db = $db ?? Database::getConnection();
     }
 
-    
+
     public function findAll(array $filters = []): array
     {
         $sql = "
@@ -109,7 +109,7 @@ class Product
         return array_map([$this, 'format'], $rows);
     }
 
-    
+
     public function count(array $filters = []): int
     {
         $sql = "
@@ -159,7 +159,7 @@ class Product
         return (int) $stmt->fetchColumn();
     }
 
-    
+
     public function findById(int $id, ?bool $onlyActive = null): array|false
     {
         $sql = "
@@ -201,7 +201,7 @@ class Product
         return $this->format($row);
     }
 
-    
+
     public function create(array $data): int
     {
         $sql = "
@@ -239,7 +239,7 @@ class Product
         return (int) $this->db->lastInsertId();
     }
 
-    
+
     public function update(int $id, array $data): bool
     {
         $allowedFields = [
@@ -281,7 +281,7 @@ class Product
         return $stmt->execute($params);
     }
 
-    
+
     public function delete(int $id): bool
     {
         $sql = "DELETE FROM products WHERE id = :id";
@@ -289,7 +289,7 @@ class Product
         return $stmt->execute(['id' => $id]);
     }
 
-    
+
     public function deactivate(int $id): bool
     {
         $sql = "UPDATE products SET is_active = 0 WHERE id = :id";
@@ -297,7 +297,7 @@ class Product
         return $stmt->execute(['id' => $id]);
     }
 
-    
+
     public function activate(int $id): bool
     {
         $sql = "UPDATE products SET is_active = 1 WHERE id = :id";
@@ -305,7 +305,7 @@ class Product
         return $stmt->execute(['id' => $id]);
     }
 
-    
+
     public function exists(int $id): bool
     {
         $sql = "SELECT COUNT(*) FROM products WHERE id = :id";
@@ -314,7 +314,7 @@ class Product
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    
+
     public function categoryExists(int $categoryId): bool
     {
         $sql = "SELECT COUNT(*) FROM categories WHERE id = :id";

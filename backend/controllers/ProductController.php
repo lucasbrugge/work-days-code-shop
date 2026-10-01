@@ -7,7 +7,7 @@ class ProductController
 {
     private static ?ProductService $service = null;
 
-   
+
     public static function getService(): ProductService
     {
         if (self::$service === null) {
@@ -16,13 +16,13 @@ class ProductController
         return self::$service;
     }
 
-    
+
     public static function setService(ProductService $service): void
     {
         self::$service = $service;
     }
 
-   
+
     public static function index(): never
     {
         try {
@@ -33,7 +33,7 @@ class ProductController
         }
     }
 
-   
+
     public static function adminIndex(): never
     {
         try {
@@ -44,7 +44,7 @@ class ProductController
         }
     }
 
-    
+
     public static function show(mixed $id): never
     {
         try {
@@ -58,7 +58,7 @@ class ProductController
             jsonResponse('Erro ao carregar detalhes do produto: ' . $e->getMessage(), 500);
         }
     }
-   
+
     public static function adminShow(mixed $id): never
     {
         try {
@@ -85,7 +85,7 @@ class ProductController
             jsonResponse('Erro ao cadastrar produto: ' . $e->getMessage(), 500);
         }
     }
-    
+
     public static function update(mixed $id): never
     {
         try {
