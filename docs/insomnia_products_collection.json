@@ -1,0 +1,643 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-10-01T11:15:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.6.1",
+  "resources": [
+    {
+      "_id": "wrk_products",
+      "parentId": null,
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "Work Days Code Shop - Produtos",
+      "description": "Suite de testes no Insomnia para o módulo de Produtos (Catálogo Público e Administração).",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000/api",
+        "admin_email": "admin@workdays.com",
+        "admin_password": "sua_senha_aqui",
+        "admin_token": "",
+        "customer_email": "cliente@workdays.com",
+        "customer_password": "sua_senha_aqui",
+        "customer_token": "",
+        "sample_product_id": 1,
+        "sample_inactive_id": 7,
+        "created_product_id": null
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "admin_email",
+          "admin_password",
+          "admin_token",
+          "customer_email",
+          "customer_password",
+          "customer_token",
+          "sample_product_id",
+          "sample_inactive_id",
+          "created_product_id"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1727780000000,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "00 - Auth (Setup de Tokens)",
+      "description": "Endpoints para obter os tokens Bearer de Admin e de Cliente.",
+      "metaSortKey": 100,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_login_admin",
+      "parentId": "fld_auth",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/auth/login",
+      "name": "01 - Login como Administrador",
+      "description": "Autentica usuário admin e obtém token para operações administrativas.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.admin_email }}\",\n  \"password\": \"{{ _.admin_password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 101,
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_customer",
+      "parentId": "fld_auth",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/auth/login",
+      "name": "02 - Login como Cliente (Customer)",
+      "description": "Autentica usuário comum para validar bloqueios de autorização (403 Forbidden).",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.customer_email }}\",\n  \"password\": \"{{ _.customer_password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 102,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_public",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "01 - Catálogo Público (Sem Autenticação)",
+      "description": "Testes do catálogo público visível pelo cliente e visitante.",
+      "metaSortKey": 200,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_pub_list_default",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "01 - Listar Produtos (Padrão)",
+      "description": "Retorna lista de produtos ativos com paginação padrão.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 201,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_list_search",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "02 - Listar com Busca (search/q)",
+      "description": "Busca por termo no nome ou descrição do produto.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "search",
+          "value": "Pink Floyd",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "metaSortKey": 202,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_list_category",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "03 - Filtrar por Categoria (ID ou Slug)",
+      "description": "Filtra produtos pela categoria vinil.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "category",
+          "value": "vinil",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "metaSortKey": 203,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_list_price",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "04 - Filtrar por Faixa de Preço",
+      "description": "Filtra produtos com preço entre min_price e max_price.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "min_price",
+          "value": "50",
+          "disabled": false
+        },
+        {
+          "name": "max_price",
+          "value": "100",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "metaSortKey": 204,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_list_sort",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "05 - Ordenação (sort=price_asc)",
+      "description": "Ordena produtos por menor preço.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "sort",
+          "value": "price_asc",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "metaSortKey": 205,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_list_pagination",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products",
+      "name": "06 - Paginação (page & per_page)",
+      "description": "Testa limite e página na listagem.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "page",
+          "value": "1",
+          "disabled": false
+        },
+        {
+          "name": "per_page",
+          "value": "2",
+          "disabled": false
+        }
+      ],
+      "headers": [],
+      "metaSortKey": 206,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_show_active",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products/{{ _.sample_product_id }}",
+      "name": "07 - Detalhe de Produto Ativo (200 OK)",
+      "description": "Consulta dados de um produto ativo existente.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 207,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_show_inactive",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products/{{ _.sample_inactive_id }}",
+      "name": "08 - Detalhe de Produto Inativo (Esperado: 404 Not Found)",
+      "description": "Garante que o catálogo público não expõe produtos inativos.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 208,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_show_not_found",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products/999999",
+      "name": "09 - Detalhe com ID Inexistente (404 Not Found)",
+      "description": "Consulta de produto com ID inexistente no banco.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 209,
+      "_type": "request"
+    },
+    {
+      "_id": "req_pub_show_invalid_id",
+      "parentId": "fld_public",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/products/0",
+      "name": "10 - Detalhe com ID Inválido (422 Unprocessable)",
+      "description": "Consulta com ID zero ou negativo deve falhar com 422.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 210,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_admin_crud",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "02 - Admin - CRUD de Produtos (Autenticado)",
+      "description": "Operações completas de gerenciamento para administradores.",
+      "metaSortKey": 300,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_adm_list",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "01 - Listar Produtos Admin (Todos)",
+      "description": "Lista produtos incluindo os inativos.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        }
+      ],
+      "metaSortKey": 301,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_list_inactive",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "02 - Listar Apenas Inativos (Admin)",
+      "description": "Filtra produtos inativos usando is_active=0.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "is_active",
+          "value": "0",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        }
+      ],
+      "metaSortKey": 302,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_show_inactive",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products/{{ _.sample_inactive_id }}",
+      "name": "03 - Ver Produto Inativo como Admin (200 OK)",
+      "description": "O admin deve conseguir visualizar produto inativo.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        }
+      ],
+      "metaSortKey": 303,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_create_success",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "04 - Criar Produto (201 Created)",
+      "description": "Cadastra novo produto no banco.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"category_id\": 1,\n  \"name\": \"Disco de Vinil Led Zeppelin IV\",\n  \"description\": \"Edição especial remasterizada de luxo em vinil 180g.\",\n  \"price\": 219.90,\n  \"stock\": 15,\n  \"image_url\": \"https://exemplo.com/led-zeppelin.jpg\",\n  \"is_active\": true\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 304,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_update_success",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products/{{ _.sample_product_id }}",
+      "name": "05 - Atualizar Produto Parcialmente (200 OK)",
+      "description": "Altera preço, estoque e descrição de produto existente.",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"price\": 199.90,\n  \"stock\": 25,\n  \"description\": \"Descrição atualizada via Insomnia.\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 305,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_delete_soft",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products/{{ _.sample_product_id }}",
+      "name": "06 - Desativar Produto (Soft Delete - Padrão)",
+      "description": "Define is_active = false sem apagar o registro do banco de dados.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        }
+      ],
+      "metaSortKey": 306,
+      "_type": "request"
+    },
+    {
+      "_id": "req_adm_delete_force",
+      "parentId": "fld_admin_crud",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products/999999",
+      "name": "07 - Excluir Permanentemente (force=true)",
+      "description": "Remove fisicamente do banco de dados com parâmetro ?force=true.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [
+        {
+          "name": "force",
+          "value": "true",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        }
+      ],
+      "metaSortKey": 307,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_admin_val",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "03 - Validações de Regra de Negócio (422 Unprocessable)",
+      "description": "Cenários de erro de validação ao criar ou editar produtos.",
+      "metaSortKey": 400,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_val_short_name",
+      "parentId": "fld_val",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "01 - Erro: Nome com menos de 2 caracteres",
+      "description": "Nome inválido deve retornar 422.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"category_id\": 1,\n  \"name\": \"A\",\n  \"price\": 100.00\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 401,
+      "_type": "request"
+    },
+    {
+      "_id": "req_val_invalid_cat",
+      "parentId": "fld_val",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "02 - Erro: Categoria Inexistente",
+      "description": "Informar ID de categoria que não existe no banco deve retornar 422.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"category_id\": 9999,\n  \"name\": \"Produto Teste\",\n  \"price\": 100.00\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 402,
+      "_type": "request"
+    },
+    {
+      "_id": "req_val_negative_price",
+      "parentId": "fld_val",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "03 - Erro: Preço Negativo",
+      "description": "Preço menor que zero deve retornar 422.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"category_id\": 1,\n  \"name\": \"Produto Preço Inválido\",\n  \"price\": -25.50\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaSortKey": 403,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_security",
+      "parentId": "wrk_products",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "name": "04 - Segurança e Autorização (RBAC: 401 e 403)",
+      "description": "Garantir que rotas de admin exijam autenticação e permissão de admin.",
+      "metaSortKey": 500,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_sec_no_token",
+      "parentId": "fld_security",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "01 - Acesso Admin sem Token (401 Unauthorized)",
+      "description": "Chamada sem cabeçalho Authorization deve ser rejeitada com 401.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "metaSortKey": 501,
+      "_type": "request"
+    },
+    {
+      "_id": "req_sec_invalid_token",
+      "parentId": "fld_security",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "02 - Acesso com Token Falso/Expirado (401 Unauthorized)",
+      "description": "Chamada com token inexistente deve ser rejeitada com 401.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer token_falso_123456"
+        }
+      ],
+      "metaSortKey": 502,
+      "_type": "request"
+    },
+    {
+      "_id": "req_sec_forbidden_customer",
+      "parentId": "fld_security",
+      "modified": 1727780000000,
+      "created": 1727780000000,
+      "url": "{{ _.base_url }}/admin/products",
+      "name": "03 - Acesso Admin por Cliente Comum (403 Forbidden)",
+      "description": "Cliente autenticado sem role admin deve ser barrado com 403.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.customer_token }}"
+        }
+      ],
+      "metaSortKey": 503,
+      "_type": "request"
+    }
+  ]
+}
