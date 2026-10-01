@@ -1,18 +1,19 @@
 class ApiError extends Error {
-  constructor(status, data) {
-    super(data?.message || "Erro na requisição");
+  constructor(status, message, errors) {
+    super(message || "Erro na requisição");
     this.status = status;
-    this.data = data;           // { message, errors: { campo: [msgs] } }
+    this.data = { message, errors: errors || {} };
   }
 }
 
 const CartToken = {
-  get() { return localStorage.getItem("cart_token"); },
-  set(t) { localStorage.setItem("cart_token", t); },
-  clear() { localStorage.removeItem("cart_token"); },
+  get() { return localStorage.getItem("guest_token"); },
+  set(t) { localStorage.setItem("guest_token", t); },
+  clear() { localStorage.removeItem("guest_token"); },
 };
 
-async function api(path, { method = "GET", body, params } = {}) {
+// Único lugar do front que faz fetch (FRONT-19)
+async function request(path, { method = "GET", body, params } = {}) {
   const url = new URL(CONFIG.API_URL + path);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
@@ -23,26 +24,35 @@ async function api(path, { method = "GET", body, params } = {}) {
   const headers = { Accept: "application/json" };
   if (body) headers["Content-Type"] = "application/json";
   if (Auth.getToken()) headers["Authorization"] = `Bearer ${Auth.getToken()}`;
-  if (CartToken.get()) headers["X-Cart-Token"] = CartToken.get();
+  if (CartToken.get()) headers["X-Guest-Token"] = CartToken.get();
 
   const res = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+  const json = res.status === 204 ? null : await res.json().catch(() => null);
 
-  // a API pode devolver o token do carrinho de visitante no header
-  const newCartToken = res.headers.get("X-Cart-Token");
-  if (newCartToken) CartToken.set(newCartToken);
-
-  const data = res.status === 204 ? null : await res.json().catch(() => null);
-
-  if (!res.ok) {
+  if (!res.ok || json?.success === false) {
     if (res.status === 401 && Auth.isLoggedIn()) {
       Auth.clear();
-      window.location.href = "login.html";
+      window.location.href = CONFIG.SITE_ROOT + "login.html";
     }
-    throw new ApiError(res.status, data);
+    const err = json?.error;
+    const message = typeof err === "string" ? err : err?.message;
+    throw new ApiError(res.status, message, err?.errors);
   }
-  return data;
+  return json;
+}
+
+// Respostas simples: devolve só o "data"
+async function api(path, options) {
+  const json = await request(path, options);
+  return json?.data;
+}
+
+// Listas paginadas: devolve { items, meta }
+async function apiList(path, options) {
+  const json = await request(path, options);
+  return { items: json?.data ?? [], meta: json?.meta };
 }
