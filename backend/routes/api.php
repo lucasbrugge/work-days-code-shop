@@ -6,6 +6,7 @@ require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
+require_once __DIR__ . '/../controllers/AuthController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -40,16 +41,12 @@ $router->get(
 
 $router->post(
     '/api/auth/register',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/register'
-    )
+    fn () => AuthController::register()
 );
 
 $router->post(
     '/api/auth/login',
-    fn () => NotImplementedController::handle(
-        'POST /api/auth/login'
-    )
+    fn () => AuthController::login()
 );
 
 $router->post(
@@ -164,10 +161,6 @@ $router->get(
 |--------------------------------------------------------------------------
 | ADMIN - PRODUCTS
 |--------------------------------------------------------------------------
-|
-| O AdminMiddleware será integrado quando o fluxo de autenticação
-| estiver retornando o usuário autenticado.
-|
 */
 
 $router->get(
@@ -239,12 +232,6 @@ $router->delete(
 |--------------------------------------------------------------------------
 | CART
 |--------------------------------------------------------------------------
-|
-| O carrinho pode funcionar para visitante através do X-Guest-Token
-| ou para usuário autenticado através do user_id.
-|
-| A regra será implementada pelo CartService.
-|
 */
 
 $router->get(
@@ -335,10 +322,6 @@ $router->post(
 |--------------------------------------------------------------------------
 | ADMIN - ORDERS
 |--------------------------------------------------------------------------
-|
-| O AdminMiddleware será integrado quando o fluxo de autenticação
-| estiver retornando o usuário autenticado.
-|
 */
 
 $router->get(
