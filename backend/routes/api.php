@@ -161,27 +161,57 @@ $router->get(
 
 $router->get(
     '/api/admin/products',
-    fn () => ProductController::adminIndex()
+    fn () => ProductController::adminIndex(),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->get(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::adminShow($id)
+    fn ($id) => ProductController::adminShow($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->post(
     '/api/admin/products',
-    fn () => ProductController::store()
+    fn () => ProductController::store(),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->put(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::update($id)
+    fn ($id) => ProductController::update($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->delete(
     '/api/admin/products/{id}',
-    fn ($id) => ProductController::destroy($id)
+    fn ($id) => ProductController::destroy($id),
+    [
+        fn () => AuthMiddleware::requireAuth(),
+        fn () => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 /*
