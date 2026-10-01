@@ -34,7 +34,12 @@ class User
     public function findByEmail(string $email): array|false
     {
         $sql = "
-            SELECT *
+            SELECT
+                id,
+                name,
+                email,
+                password_hash,
+                role
             FROM users
             WHERE email = :email
             LIMIT 1
