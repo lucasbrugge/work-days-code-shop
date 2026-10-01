@@ -1,0 +1,15 @@
+# Environment files
+.env
+.env.*
+!.envExample
+!.env.example
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
