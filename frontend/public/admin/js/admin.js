@@ -1,24 +1,50 @@
-const sidebar = document.getElementById("sidebar");
-const toggleMenu = document.getElementById("toggleMenu");
-const headerTitle = document.getElementById("headerTitle");
 const menuItems = document.querySelectorAll(".menu-item");
-const pages = document.querySelectorAll(".page");
+const pages = document.querySelectorAll(".page-section");
 
 menuItems.forEach(function (item) {
     item.addEventListener("click", function (event) {
         event.preventDefault();
-        const pageName = item.getAttribute("data-page");
+
+        const pageName = item.dataset.page;
+
         menuItems.forEach(menu => menu.classList.remove("active"));
         item.classList.add("active");
-        pages.forEach(page => page.classList.remove("active"));
-        const selectedPage = document.getElementById("page-" + pageName);
-        if (selectedPage) selectedPage.classList.add("active");
-        const menuText = item.querySelector(".menu-text");
-        if (menuText) headerTitle.textContent = menuText.textContent;
-        if (window.innerWidth <= 700) sidebar.classList.remove("mobile-open");
+
+        pages.forEach(page => page.classList.add("hidden"));
+
+        const selectedPage = document.getElementById(pageName);
+        if (selectedPage) selectedPage.classList.remove("hidden");
     });
 });
-toggleMenu.addEventListener("click", function () {
-    if (window.innerWidth <= 700) sidebar.classList.toggle("mobile-open");
-    else sidebar.classList.toggle("collapsed");
+
+const logoutButton = document.getElementById("logoutButton");
+
+logoutButton.addEventListener("click", function () {
+    sessionStorage.removeItem("loggedIn");
+    sessionStorage.removeItem("token");
+    location.reload();
+});
+
+document.querySelectorAll("[data-close-modal]").forEach(function (button) {
+    button.addEventListener("click", function () {
+        const modal = button.closest(".modal-overlay");
+        if (modal) modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    });
+});
+
+document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
+    overlay.addEventListener("click", function (event) {
+        if (event.target === overlay) {
+            overlay.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+    });
+});
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        document.querySelectorAll(".modal-overlay").forEach(modal => modal.classList.add("hidden"));
+        document.body.style.overflow = "";
+    }
 });

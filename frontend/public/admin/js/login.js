@@ -1,39 +1,48 @@
-const LOGIN_USER = "admin";
-const LOGIN_PASSWORD = "123456";
+const loginForm = document.getElementById("loginForm");
 const loginPage = document.getElementById("loginPage");
 const adminPage = document.getElementById("adminPage");
-const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
-const loggedUser = document.getElementById("loggedUser");
-const logoutButton = document.getElementById("logoutButton");
+const loginButton = document.getElementById("loginButton");
 
-function showLogin() {
-    loginPage.style.display = "flex";
-    adminPage.style.display = "none";
+function mostrarPainel() {
+    loginPage.classList.add("hidden");
+    adminPage.classList.remove("hidden");
 }
-function showAdmin() {
-    loginPage.style.display = "none";
-    adminPage.style.display = "block";
-    loggedUser.textContent = sessionStorage.getItem("adminUser") || "Administrador";
+
+if (sessionStorage.getItem("loggedIn") === "true") {
+    mostrarPainel();
 }
-loginForm.addEventListener("submit", function (event) {
+
+loginForm.addEventListener("submit", async function (event) {
     event.preventDefault();
+
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
-    if (username === LOGIN_USER && password === LOGIN_PASSWORD) {
-        sessionStorage.setItem("adminLogged", "true");
-        sessionStorage.setItem("adminUser", username);
-        loginError.style.display = "none";
-        loginForm.reset();
-        showAdmin();
-    } else {
-        loginError.style.display = "block";
+    const originalText = loginButton.innerHTML;
+
+    loginError.textContent = "";
+    loginButton.disabled = true;
+    loginButton.innerHTML = '<span class="button-loading"><span class="spinner"></span>Entrando...</span>';
+
+    try {
+        const data = await loginApi(username, password);
+
+        sessionStorage.setItem("loggedIn", "true");
+
+        if (data?.token) {
+            sessionStorage.setItem("token", data.token);
+        }
+
+        mostrarPainel();
+    } catch (error) {
+        /*
+         * Para testar a interface sem backend, você pode temporariamente
+         * substituir o await loginApi(...) por uma Promise.
+         */
+        console.error(error);
+        loginError.textContent = error.message || "Usuário ou senha inválidos.";
+    } finally {
+        loginButton.disabled = false;
+        loginButton.innerHTML = originalText;
     }
 });
-logoutButton.addEventListener("click", function () {
-    sessionStorage.removeItem("adminLogged");
-    sessionStorage.removeItem("adminUser");
-    showLogin();
-});
-if (sessionStorage.getItem("adminLogged") === "true") showAdmin();
-else showLogin();

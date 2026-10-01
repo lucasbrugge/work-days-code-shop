@@ -8,313 +8,144 @@
 </head>
 <body>
 
-<div id="loginPage">
+<div id="loginPage" class="login-page">
     <div class="login-box">
-        <div class="login-logo">
-            <h1>Painel Administrativo</h1>
-            <p>Acesse sua área administrativa</p>
-        </div>
-
-        <div id="loginError" class="login-error">
-            Usuário ou senha inválidos.
-        </div>
+        <h1>Painel Administrativo</h1>
+        <p>Faça login para continuar</p>
 
         <form id="loginForm">
-            <div class="form-group">
+            <div class="form-field">
                 <label for="username">Usuário</label>
-                <input type="text" id="username" placeholder="Digite seu usuário"
-                       autocomplete="username" required>
+                <input type="text" id="username" required autocomplete="username">
             </div>
 
-            <div class="form-group">
+            <div class="form-field">
                 <label for="password">Senha</label>
-                <input type="password" id="password" placeholder="Digite sua senha"
-                       autocomplete="current-password" required>
+                <input type="password" id="password" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="login-button">Entrar</button>
+            <button type="submit" class="primary-button full-width" id="loginButton">Entrar</button>
+            <p id="loginError" class="login-error"></p>
         </form>
-
-        <div class="login-example">
-            <strong>Demonstração:</strong><br>
-            Usuário: admin<br>
-            Senha: 123456
-        </div>
     </div>
 </div>
 
-<div id="adminPage">
-    <div class="admin-container">
+<div id="adminPage" class="admin-page hidden">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>Admin</h2></div>
+        <nav>
+            <a href="#" class="menu-item active" data-page="dashboard">Dashboard</a>
+            <a href="#" class="menu-item" data-page="usuarios">Usuários</a>
+            <a href="#" class="menu-item" data-page="produtos">Produtos</a>
+        </nav>
+        <button id="logoutButton" class="logout-button">Sair</button>
+    </aside>
 
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <span>ADMIN</span>
-                <span>⚙</span>
+    <main class="main-content">
+        <section id="dashboard" class="page-section">
+            <div class="page-header">
+                <div><h1>Dashboard</h1><p>Visão geral do sistema</p></div>
             </div>
 
-            <nav class="menu">
-                <div class="menu-title">Principal</div>
-                <a href="#" class="menu-item active" data-page="dashboard">
-                    <span class="menu-icon">📊</span><span class="menu-text">Dashboard</span>
-                </a>
-                <a href="#" class="menu-item" data-page="usuarios">
-                    <span class="menu-icon">👥</span><span class="menu-text">Usuários</span>
-                </a>
-                <a href="#" class="menu-item" data-page="produtos">
-                    <span class="menu-icon">📦</span><span class="menu-text">Produtos</span>
-                </a>
-            </nav>
-        </aside>
+            <div class="cards">
+                <div class="card"><span class="card-title">Usuários</span><strong id="totalUsers">0</strong></div>
+                <div class="card"><span class="card-title">Produtos</span><strong id="totalProducts">0</strong></div>
+                <div class="card"><span class="card-title">Vendas</span><strong>R$ 12.450,00</strong></div>
+                <div class="card"><span class="card-title">Pedidos</span><strong>156</strong></div>
+            </div>
 
-        <main class="main">
-            <header class="header">
-                <div class="header-left">
-                    <button class="toggle-menu" id="toggleMenu" aria-label="Abrir menu">☰</button>
-                    <div class="header-title" id="headerTitle">Dashboard</div>
+            <div class="content-card">
+                <h2>Usuários recentes</h2>
+                <table>
+                    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                    <tbody id="recentUsers"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="usuarios" class="page-section hidden">
+            <div class="page-header">
+                <div><h1>Usuários</h1><p>Gerencie os usuários do sistema</p></div>
+                <button id="newUserButton" class="primary-button">+ Novo usuário</button>
+            </div>
+            <div class="content-card">
+                <table>
+                    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="produtos" class="page-section hidden">
+            <div class="page-header">
+                <div><h1>Produtos</h1><p>Gerencie os produtos do sistema</p></div>
+                <button id="newProductButton" class="primary-button">+ Novo produto</button>
+            </div>
+            <div class="content-card">
+                <table>
+                    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th></tr></thead>
+                    <tbody id="productsTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal usuário -->
+<div id="userModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div><h2>Novo usuário</h2><p>Cadastre um novo usuário</p></div>
+            <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <form id="userForm">
+            <div class="modal-body">
+                <div class="form-field"><label for="userName">Nome completo</label><input type="text" id="userName" required></div>
+                <div class="form-field"><label for="userEmail">E-mail</label><input type="email" id="userEmail" required></div>
+                <div class="form-field"><label for="userPassword">Senha</label><input type="password" id="userPassword" required></div>
+                <div class="modal-grid">
+                    <div class="form-field"><label for="userProfile">Perfil</label><select id="userProfile"><option value="Administrador">Administrador</option><option value="Usuário">Usuário</option></select></div>
+                    <div class="form-field"><label for="userStatus">Status</label><select id="userStatus"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
                 </div>
-
-                <div class="user-area">
-                    <span class="user-name" id="loggedUser">Administrador</span>
-                    <div class="user-avatar">A</div>
-                    <button class="logout-button" id="logoutButton">Sair</button>
-                </div>
-            </header>
-
-            <section class="content">
-
-                <div class="page active" id="page-dashboard">
-                    <div class="page-title">
-                        <h2>Dashboard</h2>
-                        <p>Visão geral do sistema administrativo.</p>
-                    </div>
-
-                    <div class="cards">
-                        <div class="card">
-                            <div class="card-title">Usuários</div>
-                            <div class="card-value">1.248</div>
-                            <div class="card-info">+8,5% este mês</div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Acessos hoje</div>
-                            <div class="card-value">384</div>
-                            <div class="card-info">+12% hoje</div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Pedidos</div>
-                            <div class="card-value">156</div>
-                            <div class="card-info">+4,2% esta semana</div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Faturamento</div>
-                            <div class="card-value">R$ 18.450</div>
-                            <div class="card-info">+7,1% este mês</div>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3>Últimos usuários</h3>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>E-mail</th>
-                                    <th>Perfil</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>João Silva</td>
-                                    <td>joao@email.com</td>
-                                    <td>Administrador</td>
-                                    <td><span class="status active">Ativo</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Maria Santos</td>
-                                    <td>maria@email.com</td>
-                                    <td>Editor</td>
-                                    <td><span class="status active">Ativo</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Carlos Oliveira</td>
-                                    <td>carlos@email.com</td>
-                                    <td>Usuário</td>
-                                    <td><span class="status inactive">Inativo</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="page" id="page-usuarios">
-                    <div class="page-title">
-                        <h2>Usuários</h2>
-                        <p>Gerencie os usuários do sistema.</p>
-                    </div>
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3>Usuários cadastrados</h3>
-                            <button class="save-button" id="newUserButton">+ Novo usuário</button>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <tr>
-                                    <td>#001</td><td>João Silva</td><td>joao@email.com</td>
-                                    <td>Administrador</td><td><span class="status active">Ativo</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#002</td><td>Maria Santos</td><td>maria@email.com</td>
-                                    <td>Editor</td><td><span class="status active">Ativo</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-<div class="page-title">
-                        <h2>Configurações Gerais</h2>
-                        <p>Configure informações básicas do sistema.</p>
-                    </div>
-                    <div class="panel">
-                        <form id="generalSettingsForm">
-                            <div class="settings-grid">
-                                <div class="setting">
-                                    <label for="systemName">Nome do sistema</label>
-                                    <input id="systemName" type="text" value="Meu Sistema">
-                                </div>
-                                <div class="setting">
-                                    <label for="adminEmail">E-mail administrativo</label>
-                                    <input id="adminEmail" type="email" value="admin@empresa.com">
-                                </div>
-                                <div class="setting">
-                                    <label for="phone">Telefone</label>
-                                    <input id="phone" type="text" value="(11) 99999-9999">
-                                </div>
-                                <div class="setting">
-                                    <label for="timezone">Fuso horário</label>
-                                    <select id="timezone">
-                                        <option>America/Sao_Paulo</option>
-                                        <option>America/New_York</option>
-                                        <option>UTC</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="save-button" type="submit">Salvar configurações</button>
-                        </form>
-                    </div>
-                </div>
-
-<div class="page-title">
-                        <h2>Aparência</h2>
-                        <p>Personalize a aparência do painel.</p>
-                    </div>
-                    <div class="panel">
-                        <form id="appearanceForm">
-                            <div class="setting">
-                                <label for="menuName">Nome exibido no menu</label>
-                                <input id="menuName" type="text" value="ADMIN">
-                            </div>
-                            <div class="setting">
-                                <label for="theme">Tema</label>
-                                <select id="theme">
-                                    <option value="light">Claro</option>
-                                    <option value="dark">Escuro</option>
-                                </select>
-                            </div>
-                            <div class="setting">
-                                <label for="description">Descrição do sistema</label>
-                                <textarea id="description">Painel administrativo do sistema.</textarea>
-                            </div>
-                            <button class="save-button" type="submit">Salvar aparência</button>
-                        </form>
-                    </div>
-                </div>
-
-<div class="page-title">
-                        <h2>Segurança</h2>
-                        <p>Configure opções de segurança.</p>
-                    </div>
-                    <div class="panel">
-                        <form id="securityForm">
-                            <div class="setting">
-                                <label for="sessionTime">Tempo de sessão</label>
-                                <select id="sessionTime">
-                                    <option>30 minutos</option>
-                                    <option>1 hora</option>
-                                    <option>4 horas</option>
-                                    <option>24 horas</option>
-                                </select>
-                            </div>
-                            <div class="setting">
-                                <label for="maxAttempts">Tentativas máximas de login</label>
-                                <input id="maxAttempts" type="number" value="5" min="1">
-                            </div>
-                            <button class="save-button" type="submit">Salvar segurança</button>
-                        </form>
-                    </div>
-                </div>
-
-<div class="page-title">
-                        <h2>Logs do sistema</h2>
-                        <p>Histórico de atividades administrativas.</p>
-                    </div>
-                    <div class="panel">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Data</th><th>Usuário</th><th>Ação</th><th>IP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody">
-                                <tr>
-                                    <td>30/09/2026 17:10</td><td>admin</td>
-                                    <td>Login realizado</td><td>192.168.0.10</td>
-                                </tr>
-                                <tr>
-                                    <td>30/09/2026 16:50</td><td>admin</td>
-                                    <td>Configuração alterada</td><td>192.168.0.10</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-                <div class="page" id="page-produtos">
-                    <div class="page-title">
-                        <h2>Produtos</h2>
-                        <p>Cadastre e acompanhe os produtos do sistema.</p>
-                    </div>
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3>Produtos cadastrados</h3>
-                            <button class="save-button" id="newProductButton" type="button">+ Novo produto</button>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th></tr>
-                            </thead>
-                            <tbody id="productsTableBody">
-                                <tr><td>PROD-001</td><td>Produto demonstrativo A</td><td>Geral</td><td>R$ 49,90</td><td>25</td><td><span class="status active">Ativo</span></td></tr>
-                                <tr><td>PROD-002</td><td>Produto demonstrativo B</td><td>Acessórios</td><td>R$ 89,00</td><td>8</td><td><span class="status active">Ativo</span></td></tr>
-                                <tr><td>PROD-003</td><td>Produto demonstrativo C</td><td>Geral</td><td>R$ 19,90</td><td>0</td><td><span class="status inactive">Sem estoque</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </section>
-        </main>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" data-close-modal>Cancelar</button>
+                <button type="submit" class="primary-button">Salvar usuário</button>
+            </div>
+        </form>
     </div>
 </div>
 
+<!-- Modal produto -->
+<div id="productModal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <div><h2>Novo produto</h2><p>Cadastre um novo produto</p></div>
+            <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <form id="productForm">
+            <div class="modal-body">
+                <div class="form-field"><label for="productName">Nome do produto</label><input type="text" id="productName" required></div>
+                <div class="modal-grid">
+                    <div class="form-field"><label for="productCode">Código</label><input type="text" id="productCode" required></div>
+                    <div class="form-field"><label for="productCategory">Categoria</label><input type="text" id="productCategory" required></div>
+                </div>
+                <div class="modal-grid">
+                    <div class="form-field"><label for="productPrice">Preço</label><input type="number" id="productPrice" step="0.01" min="0" required></div>
+                    <div class="form-field"><label for="productStock">Estoque</label><input type="number" id="productStock" min="0" required></div>
+                </div>
+                <div class="form-field"><label for="productStatus">Status</label><select id="productStatus"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+                <div class="form-field"><label for="productDescription">Descrição</label><textarea id="productDescription" rows="4"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" data-close-modal>Cancelar</button>
+                <button type="submit" class="primary-button">Salvar produto</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
 <script src="js/login.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/produtos.js"></script>
