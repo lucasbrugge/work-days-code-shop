@@ -1,42 +1,153 @@
-const newProductButton = document.getElementById("newProductButton");
-const productsTableBody = document.getElementById("productsTableBody");
+productForm.addEventListener("submit", async function (event) {
 
-if (newProductButton && productsTableBody) {
-    newProductButton.addEventListener("click", function () {
-        const name = prompt("Nome do produto:");
-        if (!name || !name.trim()) return;
-        const category = prompt("Categoria do produto:", "Geral");
-        if (category === null) return;
-        const priceInput = prompt("Preço (ex.: 49,90):", "0,00");
-        if (priceInput === null) return;
-        const stockInput = prompt("Quantidade em estoque:", "0");
-        if (stockInput === null) return;
+    event.preventDefault();
 
-        const price = Number(priceInput.trim().replace(",", "."));
-        const stock = Number(stockInput);
-        if (!Number.isFinite(price) || price < 0) {
-            alert("Informe um preço válido.");
-            return;
-        }
-        if (!Number.isInteger(stock) || stock < 0) {
-            alert("Informe uma quantidade de estoque válida.");
-            return;
-        }
+    const submitButton = productForm.querySelector(
+        'button[type="submit"]'
+    );
 
-        const row = document.createElement("tr");
-        const code = "PROD-" + String(productsTableBody.rows.length + 1).padStart(3, "0");
-        [code, name.trim(), category.trim() || "Geral",
-         "R$ " + price.toFixed(2).replace(".", ","), String(stock)].forEach(function (value) {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.appendChild(cell);
+    const originalText = submitButton.innerHTML;
+
+    // Ativa loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = `
+        <span class="button-loading">
+            <span class="spinner"></span>
+            Salvando...
+        </span>
+    `;
+
+    try {
+
+        const name =
+            document.getElementById("productName").value;
+
+        const code =
+            document.getElementById("productCode").value;
+
+        const category =
+            document.getElementById("productCategory").value;
+
+        const price =
+            Number(
+                document.getElementById("productPrice").value
+            );
+
+        const stock =
+            Number(
+                document.getElementById("productStock").value
+            );
+
+        const status =
+            document.getElementById("productStatus").value;
+
+        const description =
+            document.getElementById("productDescription").value;
+
+
+        // ==========================================
+        // SEU FETCH
+        // ==========================================
+
+        const response = await fetch("/api/produtos", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                name,
+                code,
+                category,
+                price,
+                stock,
+                status,
+                description
+            })
         });
-        const statusCell = document.createElement("td");
-        const badge = document.createElement("span");
-        badge.className = stock > 0 ? "status active" : "status inactive";
-        badge.textContent = stock > 0 ? "Ativo" : "Sem estoque";
-        statusCell.appendChild(badge);
-        row.appendChild(statusCell);
-        productsTableBody.appendChild(row);
-    });
-}
+
+
+        if (!response.ok) {
+            throw new Error("Erro ao cadastrar produto.");
+        }
+
+
+        const data = await response.json();
+
+
+        // ==========================================
+        // SUCESSO
+        // ==========================================
+
+        const statusClass =
+            status === "Ativo"
+                ? "active"
+                : "inactive";
+
+
+        const formattedPrice =
+            price.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${code}</td>
+            <td>${category}</td>
+            <td>${formattedPrice}</td>
+            <td>${stock}</td>
+            <td>
+                <span class="status ${statusClass}">
+                    ${status}
+                </span>
+            </td>
+        `;
+
+
+        productsTable.appendChild(row);
+
+
+        const currentTotal =
+            Number(totalProducts.textContent);
+
+        totalProducts.textContent =
+            currentTotal + 1;
+
+
+        productForm.reset();
+
+        productModal.classList.add("hidden");
+
+        document.body.style.overflow = "";
+
+
+        console.log("Produto cadastrado:", data);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Não foi possível cadastrar o produto."
+        );
+
+
+    } finally {
+
+        // Sempre executa, sucesso ou erro
+        submitButton.disabled = false;
+
+        submitButton.innerHTML =
+            originalText;
+
+    }
+
+});
