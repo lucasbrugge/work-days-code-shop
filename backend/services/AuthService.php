@@ -84,7 +84,30 @@ class AuthService
             );
         }
 
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+
+        $expiresAt = date(
+            'Y-m-d H:i:s',
+            time() + (60 * 60 * 24)
+        );
+
+        $stmt = $this->db->prepare("
+            INSERT INTO auth_tokens
+                (user_id, token_hash, expires_at)
+            VALUES
+                (:user_id, :token_hash, :expires_at)
+        ");
+
+        $stmt->execute([
+            'user_id' => $user['id'],
+            'token_hash' => $tokenHash,
+            'expires_at' => $expiresAt
+        ]);
+
         return [
+            'token' => $token,
+            'expires_at' => $expiresAt,
             'user' => [
                 'id' => $user['id'],
                 'name' => $user['name'],
