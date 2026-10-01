@@ -6,13 +6,13 @@ VALUES
 (
     'Administrador',
     'admin@workdays.com',
-    '$2y$12$ZWb4LZ5jvfAi7wWImz7QrOJs4IVaDqmLf2EWUNZ9/QIsRZGckTTeW',
+    '$2y$12$iko/gvOfEgaIc/ectk4gJeu.1Y0vjMr9hCbTGbDCVls9JG9p8/t.K',
     'admin'
 ),
 (
     'Cliente Teste',
     'cliente@workdays.com',
-    '$2y$12$8Q2bWiEHXW4SGKW600IN3uPpisScK52n5HGZ584TyNpBXUmDMWj6K',
+    '$2y$12$JWy7Yx8lCXR36ztfJWsobO717mF.0RbTakYveyTCOzscpZ/CeVriC',
     'customer'
 );
 
