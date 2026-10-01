@@ -65,4 +65,33 @@ class User
 
         return $stmt->fetchColumn() > 0;
     }
+
+    public function create(
+        string $name,
+        string $email,
+        string $passwordHash
+    ): int {
+        $sql = "
+            INSERT INTO users (
+                name,
+                email,
+                password_hash
+            )
+            VALUES (
+                :name,
+                :email,
+                :password_hash
+            )
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'password_hash' => $passwordHash
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
 }
