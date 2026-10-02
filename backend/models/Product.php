@@ -348,6 +348,21 @@ class Product
         return $stmt->rowCount() > 0;
     }
 
+    public function incrementStock(int $id, int $quantity): bool
+    {
+        if ($quantity <= 0) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare('UPDATE products SET stock = stock + :quantity WHERE id = :id');
+        $stmt->execute([
+            'id' => $id,
+            'quantity' => $quantity
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
     public function format(array $row): array
     {
         return [

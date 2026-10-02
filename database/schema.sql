@@ -149,6 +149,20 @@ CREATE TABLE orders (
 
     address_id INT UNSIGNED NOT NULL,
 
+    shipping_street VARCHAR(150) NOT NULL,
+
+    shipping_number VARCHAR(20) NOT NULL,
+
+    shipping_complement VARCHAR(100),
+
+    shipping_neighborhood VARCHAR(100) NOT NULL,
+
+    shipping_city VARCHAR(100) NOT NULL,
+
+    shipping_state CHAR(2) NOT NULL,
+
+    shipping_zip_code VARCHAR(10) NOT NULL,
+
     status ENUM(
         'pending_payment',
         'paid',

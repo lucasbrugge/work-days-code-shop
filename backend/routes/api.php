@@ -13,6 +13,7 @@ require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/CartController.php';
+require_once __DIR__ . '/../controllers/OrderController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -297,9 +298,7 @@ $router->delete(
 
 $router->post(
     '/api/orders',
-    fn() => NotImplementedController::handle(
-        'POST /api/orders'
-    ),
+    fn() => OrderController::store(),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -307,9 +306,7 @@ $router->post(
 
 $router->get(
     '/api/orders',
-    fn() => NotImplementedController::handle(
-        'GET /api/orders'
-    ),
+    fn() => OrderController::index(),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -317,9 +314,7 @@ $router->get(
 
 $router->get(
     '/api/orders/{id}',
-    fn($id) => NotImplementedController::handle(
-        "GET /api/orders/{$id}"
-    ),
+    fn($id) => OrderController::show($id),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -327,9 +322,7 @@ $router->get(
 
 $router->post(
     '/api/orders/{id}/pay',
-    fn($id) => NotImplementedController::handle(
-        "POST /api/orders/{$id}/pay"
-    ),
+    fn($id) => OrderController::pay($id),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -337,9 +330,7 @@ $router->post(
 
 $router->post(
     '/api/orders/{id}/cancel',
-    fn($id) => NotImplementedController::handle(
-        "POST /api/orders/{$id}/cancel"
-    ),
+    fn($id) => OrderController::cancel($id),
     [
         fn() => AuthMiddleware::requireAuth()
     ]

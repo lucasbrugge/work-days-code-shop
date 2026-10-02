@@ -2,16 +2,19 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/CartService.php';
 
 class AuthService
 {
     private PDO $db;
     private User $userModel;
+    private CartService $cartService;
 
     public function __construct()
     {
         $this->db = Database::getConnection();
         $this->userModel = new User($this->db);
+        $this->cartService = new CartService();
     }
 
     public function register(array $data): array
@@ -71,7 +74,8 @@ class AuthService
 
     public function login(
         string $email,
-        string $password
+        string $password,
+        ?string $guestToken = null
     ): array
     {
         $email = strtolower(
@@ -98,18 +102,32 @@ class AuthService
             time() + (60 * 60 * 24)
         );
 
-        $stmt = $this->db->prepare("
-            INSERT INTO auth_tokens
-                (user_id, token_hash, expires_at)
-            VALUES
-                (:user_id, :token_hash, :expires_at)
-        ");
+        $this->db->beginTransaction();
+        try {
+            if ($guestToken !== null && $guestToken !== '') {
+                $this->cartService->mergeGuestCart((int) $user['id'], $guestToken);
+            }
 
-        $stmt->execute([
-            'user_id' => $user['id'],
-            'token_hash' => $tokenHash,
-            'expires_at' => $expiresAt
-        ]);
+            $stmt = $this->db->prepare("
+                INSERT INTO auth_tokens
+                    (user_id, token_hash, expires_at)
+                VALUES
+                    (:user_id, :token_hash, :expires_at)
+            ");
+
+            $stmt->execute([
+                'user_id' => $user['id'],
+                'token_hash' => $tokenHash,
+                'expires_at' => $expiresAt
+            ]);
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
 
         return [
             'token' => $token,

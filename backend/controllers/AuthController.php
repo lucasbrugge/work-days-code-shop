@@ -54,7 +54,8 @@ class AuthController
 
             $result = self::getService()->login(
                 $data['email'],
-                $data['password']
+                $data['password'],
+                $_SERVER['HTTP_X_GUEST_TOKEN'] ?? ($data['guest_token'] ?? null)
             );
 
             jsonResponse($result);
@@ -64,6 +65,13 @@ class AuthController
             jsonResponse(
                 'Erro ao realizar login',
                 500
+            );
+
+        } catch (CartMergeException $e) {
+
+            jsonResponse(
+                $e->getMessage(),
+                409
             );
 
         } catch (RuntimeException $e) {
