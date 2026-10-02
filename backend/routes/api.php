@@ -14,6 +14,7 @@ require_once __DIR__ . '/../controllers/ProductController.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/CartController.php';
 require_once __DIR__ . '/../controllers/OrderController.php';
+require_once __DIR__ . '/../controllers/AddressController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -106,9 +107,7 @@ $router->put(
 
 $router->get(
     '/api/addresses',
-    fn() => NotImplementedController::handle(
-        'GET /api/addresses'
-    ),
+    fn() => AddressController::index(),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -116,9 +115,7 @@ $router->get(
 
 $router->post(
     '/api/addresses',
-    fn() => NotImplementedController::handle(
-        'POST /api/addresses'
-    ),
+    fn() => AddressController::store(),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -126,9 +123,7 @@ $router->post(
 
 $router->put(
     '/api/addresses/{id}',
-    fn($id) => NotImplementedController::handle(
-        "PUT /api/addresses/{$id}"
-    ),
+    fn($id) => AddressController::update($id),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
@@ -136,9 +131,7 @@ $router->put(
 
 $router->delete(
     '/api/addresses/{id}',
-    fn($id) => NotImplementedController::handle(
-        "DELETE /api/addresses/{$id}"
-    ),
+    fn($id) => AddressController::destroy($id),
     [
         fn() => AuthMiddleware::requireAuth()
     ]
