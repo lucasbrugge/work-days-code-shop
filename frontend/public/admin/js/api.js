@@ -476,3 +476,42 @@ async function getCategorias() {
     return result?.data || [];
 
 }
+
+
+/** Cria uma categoria administrativa. */
+async function criarCategoria(categoria) {
+
+    return apiFetch(
+        "/admin/categories",
+        {
+            method: "POST",
+            body: JSON.stringify(categoria)
+        }
+    );
+
+}
+
+
+/** Atualiza nome e slug de uma categoria. */
+async function atualizarCategoria(id, categoria) {
+
+    return apiFetch(
+        `/admin/categories/${id}`,
+        {
+            method: "PUT",
+            body: JSON.stringify(categoria)
+        }
+    );
+
+}
+
+
+/** Exclui uma categoria sem produtos vinculados. */
+async function excluirCategoria(id) {
+
+    return apiFetch(
+        `/admin/categories/${id}`,
+        { method: "DELETE" }
+    );
+
+}

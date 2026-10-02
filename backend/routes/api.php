@@ -15,6 +15,7 @@ require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/CartController.php';
 require_once __DIR__ . '/../controllers/OrderController.php';
 require_once __DIR__ . '/../controllers/AddressController.php';
+require_once __DIR__ . '/../controllers/CategoryController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
@@ -222,14 +223,7 @@ $router->delete(
 
 $router->get(
     '/api/categories',
-    function () {
-        try {
-            $stmt = Database::getConnection()->query('SELECT id, name, slug FROM categories ORDER BY id ASC');
-            jsonResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
-        } catch (Throwable $e) {
-            jsonResponse('Erro ao listar categorias: ' . $e->getMessage(), 500);
-        }
-    }
+    fn() => CategoryController::index()
 );
 
 /*
@@ -240,23 +234,29 @@ $router->get(
 
 $router->post(
     '/api/admin/categories',
-    fn() => NotImplementedController::handle(
-        'POST /api/admin/categories'
-    )
+    fn() => CategoryController::store(),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(AuthMiddleware::user() ?? [])
+    ]
 );
 
 $router->put(
     '/api/admin/categories/{id}',
-    fn($id) => NotImplementedController::handle(
-        "PUT /api/admin/categories/{$id}"
-    )
+    fn($id) => CategoryController::update($id),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(AuthMiddleware::user() ?? [])
+    ]
 );
 
 $router->delete(
     '/api/admin/categories/{id}',
-    fn($id) => NotImplementedController::handle(
-        "DELETE /api/admin/categories/{$id}"
-    )
+    fn($id) => CategoryController::destroy($id),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(AuthMiddleware::user() ?? [])
+    ]
 );
 
 /*
