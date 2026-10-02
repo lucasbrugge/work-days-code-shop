@@ -19,6 +19,7 @@ require_once __DIR__ . '/../controllers/CategoryController.php';
 
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../middleware/AdminMiddleware.php';
+require_once __DIR__ . '/../controllers/ProfileController.php';
 
 $router = new Router();
 
@@ -82,21 +83,19 @@ $router->get(
 
 $router->get(
     '/api/profile',
-    fn() => NotImplementedController::handle(
-        'GET /api/profile'
-    ),
+    fn() => ProfileController::show(),
     [
-        fn() => AuthMiddleware::requireAuth()
+        fn() =>
+            AuthMiddleware::requireAuth()
     ]
 );
 
 $router->put(
     '/api/profile',
-    fn() => NotImplementedController::handle(
-        'PUT /api/profile'
-    ),
+    fn() => ProfileController::update(),
     [
-        fn() => AuthMiddleware::requireAuth()
+        fn() =>
+            AuthMiddleware::requireAuth()
     ]
 );
 

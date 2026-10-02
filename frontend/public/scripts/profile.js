@@ -37,7 +37,7 @@
 
   async function loadProfile() {
     try {
-      const user = await api("/auth/me");
+      const user = await api("/profile");
       profileForm.elements.name.value = user.name || "";
       profileForm.elements.email.value = user.email || "";
     } catch (err) {
