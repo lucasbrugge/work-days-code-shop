@@ -16,6 +16,14 @@ class OrderConflictException extends RuntimeException
 
 class OrderService
 {
+    private const ORDER_STATUSES = [
+        'pending_payment',
+        'paid',
+        'shipped',
+        'delivered',
+        'cancelled'
+    ];
+
     private const SHIPPING_CENTS = 2490;
     private const FREE_SHIPPING_THRESHOLD_CENTS = 20000;
     private const MAX_DECIMAL_CENTS = 9999999999;
@@ -222,6 +230,83 @@ class OrderService
             $result = $this->loadOrder($orderId, $userId);
             $this->db->commit();
             return $result;
+        } catch (Throwable $e) {
+            $this->rollBackIfNeeded();
+            throw $e;
+        }
+    }
+
+    public function listOrdersForAdmin(mixed $status = null): array
+    {
+        if ($status !== null && $status !== '') {
+            if (!is_string($status) || !in_array($status, self::ORDER_STATUSES, true)) {
+                throw new InvalidArgumentException('Status do pedido inválido.');
+            }
+        } else {
+            $status = null;
+        }
+
+        $orders = $this->orderModel->findAllForAdmin($status);
+        foreach ($orders as &$order) {
+            $order['id'] = (int) $order['id'];
+            $order['user_id'] = (int) $order['user_id'];
+            $order['item_count'] = (int) $order['item_count'];
+        }
+        unset($order);
+
+        return $orders;
+    }
+
+    public function updateOrderStatusByAdmin(mixed $orderId, mixed $newStatus): array
+    {
+        $orderId = $this->positiveInteger($orderId, 'Pedido');
+        if (!is_string($newStatus) || !in_array($newStatus, self::ORDER_STATUSES, true)) {
+            throw new InvalidArgumentException('Status do pedido inválido.');
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $order = $this->orderModel->findForAdmin($orderId, true);
+            if (!$order) {
+                throw new OrderNotFoundException('Pedido não encontrado.');
+            }
+
+            $allowedTransitions = [
+                'pending_payment' => ['paid', 'cancelled'],
+                'paid' => ['shipped'],
+                'shipped' => ['delivered'],
+                'delivered' => [],
+                'cancelled' => []
+            ];
+            $currentStatus = $order['status'];
+
+            if (!in_array($newStatus, $allowedTransitions[$currentStatus] ?? [], true)) {
+                throw new OrderConflictException(
+                    'A transição de ' . $currentStatus . ' para ' . $newStatus . ' não é permitida.'
+                );
+            }
+
+            if ($newStatus === 'cancelled') {
+                $items = $this->orderModel->findItems($orderId, true);
+                foreach ($items as $item) {
+                    if ($item['product_id'] !== null && (int) $item['product_id'] > 0) {
+                        if (!$this->productModel->incrementStock((int) $item['product_id'], (int) $item['quantity'])) {
+                            throw new OrderConflictException('Não foi possível restaurar o estoque do pedido.');
+                        }
+                    }
+                }
+            }
+
+            if (!$this->orderModel->updateStatusByAdmin($orderId, $currentStatus, $newStatus)) {
+                throw new OrderConflictException('O status do pedido foi alterado. Atualize a página e tente novamente.');
+            }
+
+            $this->db->commit();
+
+            return [
+                'id' => $orderId,
+                'status' => $newStatus
+            ];
         } catch (Throwable $e) {
             $this->rollBackIfNeeded();
             throw $e;

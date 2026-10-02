@@ -108,4 +108,34 @@ class OrderController
             jsonResponse('Erro ao cancelar pedido.', 500);
         }
     }
+
+    public static function adminIndex(): never
+    {
+        try {
+            jsonResponse(self::getService()->listOrdersForAdmin($_GET['status'] ?? null));
+        } catch (InvalidArgumentException $e) {
+            jsonResponse($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            jsonResponse('Erro ao listar pedidos administrativos.', 500);
+        }
+    }
+
+    public static function adminUpdateStatus(mixed $id): never
+    {
+        try {
+            $data = getJsonBody();
+            jsonResponse(self::getService()->updateOrderStatusByAdmin(
+                $id,
+                $data['status'] ?? null
+            ));
+        } catch (OrderNotFoundException $e) {
+            jsonResponse($e->getMessage(), 404);
+        } catch (OrderConflictException $e) {
+            jsonResponse($e->getMessage(), 409);
+        } catch (InvalidArgumentException $e) {
+            jsonResponse($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            jsonResponse('Erro ao atualizar o status do pedido.', 500);
+        }
+    }
 }

@@ -68,6 +68,84 @@ class Order
         return $stmt->fetchAll();
     }
 
+    public function findAllForAdmin(?string $status = null): array
+    {
+        $sql = '
+            SELECT
+                o.id,
+                o.user_id,
+                u.name AS user_name,
+                u.email AS user_email,
+                o.status,
+                o.subtotal,
+                o.shipping,
+                o.total,
+                o.created_at,
+                COALESCE(SUM(oi.quantity), 0) AS item_count
+            FROM orders o
+            INNER JOIN users u ON u.id = o.user_id
+            LEFT JOIN order_items oi ON oi.order_id = o.id
+        ';
+        $params = [];
+
+        if ($status !== null) {
+            $sql .= ' WHERE o.status = :status';
+            $params['status'] = $status;
+        }
+
+        $sql .= '
+            GROUP BY
+                o.id, o.user_id, u.name, u.email, o.status,
+                o.subtotal, o.shipping, o.total, o.created_at
+            ORDER BY o.created_at DESC, o.id DESC
+        ';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    public function findForAdmin(int $orderId, bool $forUpdate = false): array|false
+    {
+        $sql = '
+            SELECT id, user_id, status
+            FROM orders
+            WHERE id = :id
+            LIMIT 1
+        ';
+
+        if ($forUpdate) {
+            $sql .= ' FOR UPDATE';
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $orderId]);
+
+        return $stmt->fetch();
+    }
+
+    public function updateStatusByAdmin(int $orderId, string $currentStatus, string $newStatus): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE orders
+            SET status = :new_status,
+                paid_at = CASE
+                    WHEN :paid_status = \'paid\' THEN COALESCE(paid_at, CURRENT_TIMESTAMP)
+                    ELSE paid_at
+                END
+            WHERE id = :id AND status = :current_status
+        ');
+        $stmt->execute([
+            'id' => $orderId,
+            'current_status' => $currentStatus,
+            'new_status' => $newStatus,
+            'paid_status' => $newStatus
+        ]);
+
+        return $stmt->rowCount() === 1;
+    }
+
     public function findForUser(int $orderId, int $userId, bool $forUpdate = false): array|false
     {
         $sql = '
