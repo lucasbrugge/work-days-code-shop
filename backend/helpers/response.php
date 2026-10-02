@@ -19,7 +19,7 @@ function jsonResponse(
 
     echo json_encode(
         $response,
-        JSON_UNESCAPED_UNICODE
+        JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
     );
 
     exit;
