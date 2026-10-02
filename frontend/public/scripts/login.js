@@ -2,13 +2,8 @@ const form = document.getElementById("login-form");
 const alertBox = document.getElementById("alert");
 const submit = document.getElementById("submit");
 
-if (Auth.isLoggedIn()) {
-  window.location.href = "../index.html";
-}
-
-const params = new URLSearchParams(
-  window.location.search
-);
+// Quem já está logado não precisa ver esta página
+if (Auth.isLoggedIn()) window.location.href = CONFIG.SITE_ROOT + "index.html";
 
 function showError(msg) {
   const div = document.createElement("div");
@@ -33,137 +28,42 @@ function showSuccess(msg) {
   alertBox.replaceChildren(div);
 }
 
-if (
-  params.get("cadastro") === "sucesso"
-) {
-  showSuccess(
-    "Conta criada com sucesso. Faça login para continuar."
-  );
+// ?next=... só é aceito se apontar para dentro do próprio site
+// (evita redirecionar o usuário para um site externo)
+function safeNext() {
+  const next = new URLSearchParams(location.search).get("next");
+  if (!next) return null;
+  try {
+    const url = new URL(next, CONFIG.SITE_ROOT);
+    return url.href.startsWith(CONFIG.SITE_ROOT) ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
-form.addEventListener(
-  "submit",
-  async (e) => {
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  alertBox.replaceChildren();
 
-    e.preventDefault();
+  const email = form.email.value.trim();
+  const password = form.password.value;
+  if (!email || !password) return showError("Informe e-mail e senha.");
 
-    alertBox.replaceChildren();
+  submit.disabled = true;
+  submit.textContent = "Entrando...";
+  try {
+    const body = { email, password };
+    // FRONT-09: envia o carrinho de visitante para o back fazer a fusão
+    if (CartToken.get()) body.guest_token = CartToken.get();
 
+    const data = await api("/auth/login", { method: "POST", body });
+    Auth.save(data.token, data.user);
 
-    const email =
-      form.email.value.trim();
-
-    const password =
-      form.password.value;
-
-    if (!email || !password) {
-      return showError(
-        "Informe e-mail e senha."
-      );
-    }
-
-    submit.disabled = true;
-
-    submit.textContent =
-      "Entrando...";
-
-
-    try {
-
-      const body = {
-        email,
-        password
-      };
-
-      if (CartToken.get()) {
-        body.guest_token =
-          CartToken.get();
-      }
-
-      const response = await api(
-        "/auth/login",
-        {
-          method: "POST",
-          body
-        }
-      );
-
-      const data =
-        response.data ?? response;
-
-      Auth.save(
-        data.token,
-        data.user
-      );
-
-      const next =
-        new URLSearchParams(
-          window.location.search
-        ).get("next");
-
-
-      if (next) {
-
-        window.location.href =
-          next;
-
-        return;
-      }
-
-
-      if (
-        data.user.role === "admin"
-      ) {
-
-        window.location.href =
-          "../admin/index.html";
-
-        return;
-      }
-
-
-      window.location.href =
-        "../index.html";
-
-
-    } catch (err) {
-
-      if (
-        err instanceof ApiError &&
-        err.status === 422 &&
-        typeof UI !== "undefined"
-      ) {
-
-        UI.fieldErrors(
-          form,
-          err
-        );
-
-      }
-
-      if (err.status === 401) {
-
-        showError(
-          "E-mail ou senha inválidos."
-        );
-
-        return;
-      }
-
-      showError(
-        err.message ||
-        "Não foi possível realizar o login."
-      );
-
-
-    } finally {
-
-      submit.disabled = false;
-
-      submit.textContent =
-        "Entrar";
-
-    }
-
+    window.location.href = safeNext() || CONFIG.SITE_ROOT + "index.html";
+  } catch (err) {
+    showError(err.status === 401 ? "E-mail ou senha inválidos." : err.message);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Entrar";
   }
 );

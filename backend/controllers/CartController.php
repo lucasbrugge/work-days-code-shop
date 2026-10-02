@@ -24,7 +24,7 @@ class CartController
     public static function index(): never
     {
         try {
-            $guestToken = $_SERVER['HTTP_X_CART_TOKEN'] ?? null;
+            $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
 
             $cart = self::getService()->getCart($guestToken);
 
@@ -46,7 +46,7 @@ class CartController
     public static function store(): never
     {
         try {
-            $guestToken = $_SERVER['HTTP_X_CART_TOKEN'] ?? null;
+            $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
 
             $input = json_decode(
                 file_get_contents('php://input'),
@@ -90,7 +90,7 @@ class CartController
     public static function update(int $id): never
     {
         try {
-            $guestToken = $_SERVER['HTTP_X_CART_TOKEN'] ?? null;
+            $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
 
             $input = json_decode(
                 file_get_contents('php://input'),
@@ -132,7 +132,7 @@ class CartController
     public static function destroy(int $id): never
     {
         try {
-            $guestToken = $_SERVER['HTTP_X_CART_TOKEN'] ?? null;
+            $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
 
             $cart = self::getService()->removeItem(
                 $guestToken,

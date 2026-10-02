@@ -1,14 +1,19 @@
+// O back devolve erros de validação como error.fields = { campo: "mensagem" }.
+// Normalizamos para { campo: ["mensagem"] }, que é o formato que o UI.fieldErrors espera.
+function normalizeFieldErrors(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v : [v]])
+  );
+}
+
 class ApiError extends Error {
   constructor(status, message, fields = {}) {
     super(message || "Erro na requisição");
 
     this.name = "ApiError";
     this.status = status;
-
-    this.data = {
-      message: message || "Erro na requisição",
-      fields
-    };
+    this.data = { message, errors: normalizeFieldErrors(errors) };
   }
 }
 
@@ -216,66 +221,14 @@ async function request(
       Auth.isLoggedIn()
     ) {
       Auth.clear();
-
-      window.location.href =
-        `${CONFIG.SITE_ROOT}pages/login.html`;
+      window.location.href = CONFIG.PAGES_ROOT + "login.html";
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Formato de erro da API
-    |--------------------------------------------------------------------------
-    |
-    | Pode chegar:
-    |
-    | error: "E-mail ou senha inválidos"
-    |
-    | ou:
-    |
-    | error: {
-    |   message: "Dados inválidos.",
-    |   fields: {
-    |     email: "...",
-    |     password: "..."
-    |   }
-    | }
-    |
-    */
-
-    const error =
-      json?.error;
-
-
-    const message =
-      typeof error === "string"
-        ? error
-        : error?.message;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Compatibilidade
-    |--------------------------------------------------------------------------
-    |
-    | Nosso backend usa "fields".
-    | Mantemos fallback para "errors" caso outra rota use esse formato.
-    |
-    */
-
-    const fields =
-      error?.fields ??
-      error?.errors ??
-      {};
-
-
-    throw new ApiError(
-      response.status,
-      message,
-      fields
-    );
+    const err = json?.error;
+    const message = typeof err === "string" ? err : err?.message;
+    throw new ApiError(res.status, message, err?.errors ?? err?.fields);
   }
-
+  // o back devolve o token do carrinho de visitante em data.guest_token
+  if (json?.data?.guest_token) CartToken.set(json.data.guest_token);
 
   return json;
 }
