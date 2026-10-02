@@ -11,7 +11,7 @@ class Cart
         $this->db = $db ?? Database::getConnection();
     }
 
-    public function findByGuestToken(string $guestToken): array|false
+    public function findByGuestToken(string $guestToken, bool $forUpdate = false): array|false
     {
         $sql = "
             SELECT
@@ -25,12 +25,24 @@ class Cart
             LIMIT 1
         ";
 
+        if ($forUpdate) {
+            $sql .= ' FOR UPDATE';
+        }
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'guest_token' => $guestToken
         ]);
 
         return $stmt->fetch();
+    }
+
+    public function lockActiveCart(int $cartId): bool
+    {
+        $stmt = $this->db->prepare("SELECT id FROM carts WHERE id = :id AND status = 'active' FOR UPDATE");
+        $stmt->execute(['id' => $cartId]);
+
+        return $stmt->fetch() !== false;
     }
 
     public function findActiveByUserId(int $userId, bool $forUpdate = false): array|false
@@ -69,6 +81,22 @@ class Cart
     public function findItemsForMerge(int $cartId): array
     {
         $stmt = $this->db->prepare('SELECT id, product_id, quantity FROM cart_items WHERE cart_id = :cart_id ORDER BY product_id FOR UPDATE');
+        $stmt->execute(['cart_id' => $cartId]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function findItemsForOrder(int $cartId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT ci.id, ci.product_id, ci.quantity,
+                   p.name AS product_name, p.price, p.stock, p.is_active
+            FROM cart_items ci
+            INNER JOIN products p ON p.id = ci.product_id
+            WHERE ci.cart_id = :cart_id
+            ORDER BY p.id
+            FOR UPDATE
+        ');
         $stmt->execute(['cart_id' => $cartId]);
 
         return $stmt->fetchAll();

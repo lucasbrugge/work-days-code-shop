@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../models/Cart.php';
 require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../config/database.php';
 
 class CartMergeException extends RuntimeException
 {
@@ -9,6 +10,7 @@ class CartMergeException extends RuntimeException
 
 class CartService
 {
+    private PDO $db;
     private Cart $cartModel;
     private Product $productModel;
 
@@ -16,6 +18,7 @@ class CartService
         ?Cart $cartModel = null,
         ?Product $productModel = null
     ) {
+        $this->db = Database::getConnection();
         $this->cartModel = $cartModel ?? new Cart();
         $this->productModel = $productModel ?? new Product();
     }
@@ -23,7 +26,7 @@ class CartService
     public function getOrCreateGuestCart(?string $guestToken): array
     {
         if (!empty($guestToken)) {
-            $cart = $this->cartModel->findByGuestToken($guestToken);
+            $cart = $this->cartModel->findByGuestToken($guestToken, $this->db->inTransaction());
 
             if ($cart) {
                 return $cart;
@@ -44,7 +47,7 @@ class CartService
 
     private function getOrCreateUserCart(int $userId): array
     {
-        $cart = $this->cartModel->findActiveByUserId($userId);
+        $cart = $this->cartModel->findActiveByUserId($userId, $this->db->inTransaction());
         if ($cart) {
             return $cart;
         }
@@ -170,73 +173,52 @@ class CartService
         int $quantity,
         ?int $userId = null
     ): array {
-        if ($productId <= 0) {
-            throw new InvalidArgumentException(
-                'ID de produto inválido.'
-            );
-        }
+        $this->db->beginTransaction();
+        try {
+            $cart = $userId !== null
+                ? $this->getOrCreateUserCart($userId)
+                : $this->getOrCreateGuestCart($guestToken);
 
-        if ($quantity <= 0) {
-            throw new InvalidArgumentException(
-                'A quantidade deve ser maior que zero.'
-            );
-        }
-
-        $product = $this->productModel->findById(
-            $productId,
-            true
-        );
-
-        if (!$product) {
-            throw new RuntimeException(
-                'Produto não encontrado ou inativo.'
-            );
-        }
-
-        if ((int) $product['stock'] <= 0) {
-            throw new RuntimeException(
-                'Produto sem estoque.'
-            );
-        }
-
-        $cart = $userId !== null
-            ? $this->getOrCreateUserCart($userId)
-            : $this->getOrCreateGuestCart($guestToken);
-
-        $existingItem = $this->cartModel->findItem(
-            (int) $cart['id'],
-            $productId
-        );
-
-        if ($existingItem) {
-            $newQuantity =
-                (int) $existingItem['quantity'] + $quantity;
-
-            if ($newQuantity > (int) $product['stock']) {
-                throw new RuntimeException(
-                    'Quantidade solicitada maior que o estoque disponível.'
-                );
+            if (!$this->cartModel->lockActiveCart((int) $cart['id'])) {
+                throw new RuntimeException('O carrinho não está mais ativo. Atualize a página e tente novamente.');
             }
 
-            $this->cartModel->updateItemQuantity(
-                (int) $existingItem['id'],
-                $newQuantity
-            );
-        } else {
-            if ($quantity > (int) $product['stock']) {
-                throw new RuntimeException(
-                    'Quantidade solicitada maior que o estoque disponível.'
-                );
+            if ($productId <= 0) {
+                throw new InvalidArgumentException('ID de produto inválido.');
+            }
+            if ($quantity <= 0) {
+                throw new InvalidArgumentException('A quantidade deve ser maior que zero.');
             }
 
-            $this->cartModel->addItem(
-                (int) $cart['id'],
-                $productId,
-                $quantity
-            );
-        }
+            $product = $this->productModel->findById($productId, true);
+            if (!$product) {
+                throw new RuntimeException('Produto não encontrado ou inativo.');
+            }
+            if ((int) $product['stock'] <= 0) {
+                throw new RuntimeException('Produto sem estoque.');
+            }
 
-        return $this->getCart($cart['guest_token'], $userId);
+            $existingItem = $this->cartModel->findItem((int) $cart['id'], $productId);
+            if ($existingItem) {
+                $newQuantity = (int) $existingItem['quantity'] + $quantity;
+                if ($newQuantity > (int) $product['stock']) {
+                    throw new RuntimeException('Quantidade solicitada maior que o estoque disponível.');
+                }
+                $this->cartModel->updateItemQuantity((int) $existingItem['id'], $newQuantity);
+            } else {
+                if ($quantity > (int) $product['stock']) {
+                    throw new RuntimeException('Quantidade solicitada maior que o estoque disponível.');
+                }
+                $this->cartModel->addItem((int) $cart['id'], $productId, $quantity);
+            }
+
+            $result = $this->getCart($cart['guest_token'], $userId);
+            $this->db->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $this->rollBackIfNeeded();
+            throw $e;
+        }
     }
 
     public function updateItem(
@@ -245,56 +227,43 @@ class CartService
         int $quantity,
         ?int $userId = null
     ): array {
-        if ($itemId <= 0) {
-            throw new InvalidArgumentException(
-                'ID do item inválido.'
-            );
+        $this->db->beginTransaction();
+        try {
+            $cart = $userId !== null
+                ? $this->getOrCreateUserCart($userId)
+                : $this->getOrCreateGuestCart($guestToken);
+            if (!$this->cartModel->lockActiveCart((int) $cart['id'])) {
+                throw new RuntimeException('O carrinho não está mais ativo. Atualize a página e tente novamente.');
+            }
+
+            if ($itemId <= 0) {
+                throw new InvalidArgumentException('ID do item inválido.');
+            }
+            if ($quantity <= 0) {
+                throw new InvalidArgumentException('A quantidade deve ser maior que zero.');
+            }
+
+            $item = $this->cartModel->findItemById((int) $cart['id'], $itemId);
+            if (!$item) {
+                throw new RuntimeException('Item não encontrado no carrinho.');
+            }
+
+            $product = $this->productModel->findById((int) $item['product_id'], true);
+            if (!$product) {
+                throw new RuntimeException('Produto não encontrado ou inativo.');
+            }
+            if ($quantity > (int) $product['stock']) {
+                throw new RuntimeException('Quantidade solicitada maior que o estoque disponível.');
+            }
+
+            $this->cartModel->updateItemQuantity($itemId, $quantity);
+            $result = $this->getCart($cart['guest_token'], $userId);
+            $this->db->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $this->rollBackIfNeeded();
+            throw $e;
         }
-
-        if ($quantity <= 0) {
-            throw new InvalidArgumentException(
-                'A quantidade deve ser maior que zero.'
-            );
-        }
-
-        $cart = $userId !== null
-            ? $this->getOrCreateUserCart($userId)
-            : $this->getOrCreateGuestCart($guestToken);
-
-        $item = $this->cartModel->findItemById(
-            (int) $cart['id'],
-            $itemId
-        );
-
-        if (!$item) {
-            throw new RuntimeException(
-                'Item não encontrado no carrinho.'
-            );
-        }
-
-        $product = $this->productModel->findById(
-            (int) $item['product_id'],
-            true
-        );
-
-        if (!$product) {
-            throw new RuntimeException(
-                'Produto não encontrado ou inativo.'
-            );
-        }
-
-        if ($quantity > (int) $product['stock']) {
-            throw new RuntimeException(
-                'Quantidade solicitada maior que o estoque disponível.'
-            );
-        }
-
-        $this->cartModel->updateItemQuantity(
-            $itemId,
-            $quantity
-        );
-
-        return $this->getCart($cart['guest_token'], $userId);
     }
 
     public function removeItem(
@@ -302,32 +271,38 @@ class CartService
         int $itemId,
         ?int $userId = null
     ): array {
-        if ($itemId <= 0) {
-            throw new InvalidArgumentException(
-                'ID do item inválido.'
-            );
+        $this->db->beginTransaction();
+        try {
+            $cart = $userId !== null
+                ? $this->getOrCreateUserCart($userId)
+                : $this->getOrCreateGuestCart($guestToken);
+            if (!$this->cartModel->lockActiveCart((int) $cart['id'])) {
+                throw new RuntimeException('O carrinho não está mais ativo. Atualize a página e tente novamente.');
+            }
+
+            if ($itemId <= 0) {
+                throw new InvalidArgumentException('ID do item inválido.');
+            }
+
+            $item = $this->cartModel->findItemById((int) $cart['id'], $itemId);
+            if (!$item) {
+                throw new RuntimeException('Item não encontrado no carrinho.');
+            }
+
+            $this->cartModel->deleteItem((int) $cart['id'], $itemId);
+            $result = $this->getCart($cart['guest_token'], $userId);
+            $this->db->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $this->rollBackIfNeeded();
+            throw $e;
         }
+    }
 
-        $cart = $userId !== null
-            ? $this->getOrCreateUserCart($userId)
-            : $this->getOrCreateGuestCart($guestToken);
-
-        $item = $this->cartModel->findItemById(
-            (int) $cart['id'],
-            $itemId
-        );
-
-        if (!$item) {
-            throw new RuntimeException(
-                'Item não encontrado no carrinho.'
-            );
+    private function rollBackIfNeeded(): void
+    {
+        if ($this->db->inTransaction()) {
+            $this->db->rollBack();
         }
-
-        $this->cartModel->deleteItem(
-            (int) $cart['id'],
-            $itemId
-        );
-
-        return $this->getCart($cart['guest_token'], $userId);
     }
 }
