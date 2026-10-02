@@ -1,160 +1,433 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
 
-    <title>Painel Administrativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/scripts.js" defer></script>
-</head>
+    <title>Painel Administrativo | Groove Discos</title>
 
-<body>
+    <link rel="stylesheet" href="./css/admin.css" />
+  </head>
 
-<div id="loginPage" class="login-page">
-    <div class="login-box">
-        <h1>Painel Administrativo</h1>
-        <p>Faça login para continuar</p>
+  <body>
+    <div id="adminPage" class="admin-page">
+      <!-- SIDEBAR -->
 
-        <form id="loginForm">
-            <div class="form-field">
-                <label for="username">Usuário</label>
-                <input type="text" id="username" required autocomplete="username">
-            </div>
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <h2>Groove Discos</h2>
 
-            <div class="form-field">
-                <label for="password">Senha</label>
-                <input type="password" id="password" required autocomplete="current-password">
-            </div>
+          <span> Painel Admin </span>
+        </div>
 
-            <button type="submit" class="primary-button full-width" id="loginButton">Entrar</button>
-            <p id="loginError" class="login-error"></p>
-        </form>
-    </div>
-
-</div>
-
-<div id="adminPage" class="admin-page hidden">
-    <aside class="sidebar">
-        <div class="sidebar-logo"><h2>Admin</h2></div>
         <nav>
-            <a href="#" class="menu-item active" data-page="dashboard">Dashboard</a>
-            <a href="#" class="menu-item" data-page="usuarios">Usuários</a>
-            <a href="#" class="menu-item" data-page="produtos">Produtos</a>
+          <a href="#" class="menu-item active" data-page="dashboard">
+            Dashboard
+          </a>
+
+          <a href="#" class="menu-item" data-page="usuarios"> Usuários </a>
+
+          <a href="#" class="menu-item" data-page="produtos"> Produtos </a>
+
+          <a href="#" class="menu-item" data-page="categorias"> Categorias </a>
         </nav>
+
         <button id="logoutButton" class="logout-button">Sair</button>
-    </aside>
+      </aside>
 
-    <main class="main-content">
+      <!-- CONTEÚDO PRINCIPAL -->
+
+      <main class="main-content">
+        <!-- DASHBOARD -->
+
         <section id="dashboard" class="page-section">
-            <div class="page-header">
-                <div><h1>Dashboard</h1><p>Visão geral do sistema</p></div>
+          <div class="page-header">
+            <div>
+              <h1>Dashboard</h1>
+
+              <p>Visão geral do sistema</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <div class="card">
+              <span class="card-title"> Usuários </span>
+
+              <strong id="totalUsers"> — </strong>
+
+              <small> API não disponível </small>
             </div>
 
-            <div class="cards">
-                <div class="card"><span class="card-title">Usuários</span><strong id="totalUsers">0</strong></div>
-                <div class="card"><span class="card-title">Produtos</span><strong id="totalProducts">0</strong></div>
-                <div class="card"><span class="card-title">Vendas</span><strong>R$ 12.450,00</strong></div>
-                <div class="card"><span class="card-title">Pedidos</span><strong>156</strong></div>
+            <div class="card">
+              <span class="card-title"> Produtos </span>
+
+              <strong id="totalProducts"> — </strong>
+
+              <small> Carregando... </small>
             </div>
 
-            <div class="content-card">
-                <h2>Usuários recentes</h2>
-                <table>
-                    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
-                    <tbody id="recentUsers"></tbody>
-                </table>
+            <div class="card">
+              <span class="card-title"> Vendas </span>
+
+              <strong> — </strong>
+
+              <small> API não disponível </small>
             </div>
+
+            <div class="card">
+              <span class="card-title"> Pedidos </span>
+
+              <strong> — </strong>
+
+              <small> API não disponível </small>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <h2>Informações</h2>
+
+            <p>
+              O backend atual disponibiliza o gerenciamento de produtos e
+              categorias para o painel administrativo.
+            </p>
+
+            <p>
+              Os endpoints administrativos de usuários e pedidos ainda não estão
+              implementados no backend.
+            </p>
+          </div>
         </section>
+
+        <!-- USUÁRIOS -->
 
         <section id="usuarios" class="page-section hidden">
-            <div class="page-header">
-                <div><h1>Usuários</h1><p>Gerencie os usuários do sistema</p></div>
-                <button id="newUserButton" class="primary-button">+ Novo usuário</button>
+          <div class="page-header">
+            <div>
+              <h1>Usuários</h1>
+
+              <p>Gerenciamento de usuários</p>
             </div>
-            <div class="content-card">
-                <table>
-                    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead>
-                    <tbody id="usersTable"></tbody>
-                </table>
-            </div>
+          </div>
+
+          <div class="content-card">
+            <p>
+              O backend ainda não possui um endpoint administrativo para listar
+              ou cadastrar usuários.
+            </p>
+
+            <p>
+              Por isso esta área não realiza chamadas falsas nem exibe dados
+              fictícios.
+            </p>
+          </div>
         </section>
+
+        <!-- PRODUTOS -->
 
         <section id="produtos" class="page-section hidden">
-            <div class="page-header">
-                <div><h1>Produtos</h1><p>Gerencie os produtos do sistema</p></div>
-                <button id="newProductButton" class="primary-button">+ Novo produto</button>
+          <div class="page-header">
+            <div>
+              <h1>Produtos</h1>
+
+              <p>Gerencie os produtos da loja</p>
             </div>
-            <div class="content-card">
-                <table>
-                    <thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th></tr></thead>
-                    <tbody id="productsTable"></tbody>
-                </table>
+
+            <button id="newProductButton" class="primary-button">
+              + Novo produto
+            </button>
+          </div>
+
+          <div id="productMessage" class="message"></div>
+
+          <!-- FILTROS -->
+
+          <div class="content-card product-filters">
+            <div class="filter-grid">
+              <div class="form-field">
+                <label for="productSearch"> Buscar produto </label>
+
+                <input
+                  type="search"
+                  id="productSearch"
+                  placeholder="Digite o nome do produto..."
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="productFilterCategory"> Categoria </label>
+
+                <select id="productFilterCategory">
+                  <option value="">Todas as categorias</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="productFilterStatus"> Status </label>
+
+                <select id="productFilterStatus">
+                  <option value="">Todos</option>
+
+                  <option value="true">Ativos</option>
+
+                  <option value="false">Inativos</option>
+                </select>
+              </div>
+
+              <div class="filter-actions">
+                <button
+                  type="button"
+                  id="clearProductFilters"
+                  class="cancel-button"
+                >
+                  Limpar filtros
+                </button>
+              </div>
             </div>
+          </div>
+
+          <!-- TABELA -->
+
+          <div class="content-card">
+            <div id="productsLoading" class="loading">
+              Carregando produtos...
+            </div>
+
+            <table id="productsTableContainer" class="hidden">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+
+                  <th>Categoria</th>
+
+                  <th>Preço</th>
+
+                  <th>Estoque</th>
+
+                  <th>Status</th>
+
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="productsTable"></tbody>
+            </table>
+
+            <div id="productsEmpty" class="empty-state hidden">
+              Nenhum produto encontrado.
+            </div>
+          </div>
         </section>
-    </main>
-</div>
 
-<!-- Modal usuário -->
-<div id="userModal" class="modal-overlay hidden">
-    <div class="modal">
-        <div class="modal-header">
-            <div><h2>Novo usuário</h2><p>Cadastre um novo usuário</p></div>
-            <button type="button" class="modal-close" data-close-modal>&times;</button>
-        </div>
-        <form id="userForm">
-            <div class="modal-body">
-                <div class="form-field"><label for="userName">Nome completo</label><input type="text" id="userName" required></div>
-                <div class="form-field"><label for="userEmail">E-mail</label><input type="email" id="userEmail" required></div>
-                <div class="form-field"><label for="userPassword">Senha</label><input type="password" id="userPassword" required></div>
-                <div class="modal-grid">
-                    <div class="form-field"><label for="userProfile">Perfil</label><select id="userProfile"><option value="Administrador">Administrador</option><option value="Usuário">Usuário</option></select></div>
-                    <div class="form-field"><label for="userStatus">Status</label><select id="userStatus"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
-                </div>
+        <!-- CATEGORIAS -->
+
+        <section id="categorias" class="page-section hidden">
+          <div class="page-header">
+            <div>
+              <h1>Categorias</h1>
+
+              <p>Gerencie as categorias dos produtos</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="cancel-button" data-close-modal>Cancelar</button>
-                <button type="submit" class="primary-button">Salvar usuário</button>
+
+            <button id="newCategoryButton" class="primary-button">
+              + Nova categoria
+            </button>
+          </div>
+
+          <div id="categoryMessage" class="message"></div>
+
+          <div class="content-card">
+            <div id="categoriesLoading" class="loading">
+              Carregando categorias...
             </div>
-        </form>
+
+            <table id="categoriesTableContainer" class="hidden">
+              <thead>
+                <tr>
+                  <th>ID</th>
+
+                  <th>Nome</th>
+
+                  <th>Slug</th>
+
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="categoriesTable"></tbody>
+            </table>
+
+            <div id="categoriesEmpty" class="empty-state hidden">
+              Nenhuma categoria encontrada.
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
-</div>
 
-<!-- Modal produto -->
-<div id="productModal" class="modal-overlay hidden">
-    <div class="modal">
+    <!-- MODAL PRODUTO -->
+
+    <div id="productModal" class="modal-overlay hidden">
+      <div class="modal">
         <div class="modal-header">
-            <div><h2>Novo produto</h2><p>Cadastre um novo produto</p></div>
-            <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <div>
+            <h2 id="productModalTitle">Novo produto</h2>
+
+            <p>Preencha os dados do produto.</p>
+          </div>
+
+          <button type="button" class="modal-close" data-close-modal>
+            &times;
+          </button>
         </div>
+
         <form id="productForm">
-            <div class="modal-body">
-                <div class="form-field"><label for="productName">Nome do produto</label><input type="text" id="productName" required></div>
-                <div class="modal-grid">
-                    <div class="form-field"><label for="productCode">Código</label><input type="text" id="productCode" required></div>
-                    <div class="form-field"><label for="productCategory">Categoria</label><input type="text" id="productCategory" required></div>
-                </div>
-                <div class="modal-grid">
-                    <div class="form-field"><label for="productPrice">Preço</label><input type="number" id="productPrice" step="0.01" min="0" required></div>
-                    <div class="form-field"><label for="productStock">Estoque</label><input type="number" id="productStock" min="0" required></div>
-                </div>
-                <div class="form-field"><label for="productStatus">Status</label><select id="productStatus"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
-                <div class="form-field"><label for="productDescription">Descrição</label><textarea id="productDescription" rows="4"></textarea></div>
+          <div class="modal-body">
+            <input type="hidden" id="productId" />
+
+            <div class="form-field">
+              <label for="productName"> Nome do produto </label>
+
+              <input type="text" id="productName" required maxlength="150" />
             </div>
-            <div class="modal-footer">
-                <button type="button" class="cancel-button" data-close-modal>Cancelar</button>
-                <button type="submit" class="primary-button">Salvar produto</button>
+
+            <div class="form-field">
+              <label for="productCategory"> Categoria </label>
+
+              <select id="productCategory" required>
+                <option value="">Carregando categorias...</option>
+              </select>
             </div>
+
+            <div class="modal-grid">
+              <div class="form-field">
+                <label for="productPrice"> Preço </label>
+
+                <input
+                  type="number"
+                  id="productPrice"
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="productStock"> Estoque </label>
+
+                <input type="number" id="productStock" min="0" required />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="productStatus"> Status </label>
+
+              <select id="productStatus">
+                <option value="true">Ativo</option>
+
+                <option value="false">Inativo</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="productImage"> URL da imagem </label>
+
+              <input
+                type="url"
+                id="productImage"
+                maxlength="500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="productDescription"> Descrição </label>
+
+              <textarea id="productDescription" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="cancel-button" data-close-modal>
+              Cancelar
+            </button>
+
+            <button type="submit" class="primary-button" id="saveProductButton">
+              Salvar produto
+            </button>
+          </div>
         </form>
+      </div>
     </div>
 
-</div>
+    <!-- MODAL CATEGORIA -->
 
-<script src="js/api.js"></script>
-<script src="js/login.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/produtos.js"></script>
-<script src="js/admin.js"></script>
-</body>
+    <div id="categoryModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2 id="categoryModalTitle">Nova categoria</h2>
+
+            <p>Preencha os dados da categoria.</p>
+          </div>
+
+          <button type="button" class="modal-close" data-category-close>
+            &times;
+          </button>
+        </div>
+
+        <form id="categoryForm">
+          <div class="modal-body">
+            <input type="hidden" id="categoryId" />
+
+            <div class="form-field">
+              <label for="categoryName"> Nome da categoria </label>
+
+              <input type="text" id="categoryName" required maxlength="100" />
+            </div>
+
+            <div class="form-field">
+              <label for="categorySlug"> Slug </label>
+
+              <input
+                type="text"
+                id="categorySlug"
+                required
+                maxlength="100"
+                placeholder="exemplo-de-categoria"
+              />
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="cancel-button" data-category-close>
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="primary-button"
+              id="saveCategoryButton"
+            >
+              Salvar categoria
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="../scripts/config.js"></script>
+
+    <script src="../scripts/auth.js"></script>
+
+    <script src="js/api.js"></script>
+
+    <script src="js/dashboard.js"></script>
+
+    <script src="js/produtos.js"></script>
+
+    <script src="js/categorias.js"></script>
+
+    <script src="js/admin.js"></script>
+  </body>
 </html>

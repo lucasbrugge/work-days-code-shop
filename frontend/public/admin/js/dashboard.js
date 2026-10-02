@@ -1,76 +1,80 @@
-const userModal = document.getElementById("userModal");
-const newUserButton = document.getElementById("newUserButton");
-const userForm = document.getElementById("userForm");
-const usersTable = document.getElementById("usersTable");
-const recentUsers = document.getElementById("recentUsers");
-const totalUsers = document.getElementById("totalUsers");
+const totalProducts =
+    document.getElementById(
+        "totalProducts"
+    );
 
-function renderUser(user, tableBody) {
-    const row = document.createElement("tr");
-    const status = user.status || "Ativo";
-    const statusClass = status === "Ativo" ? "active" : "inactive";
 
-    row.innerHTML = `
-        <td>${escapeHtml(user.name || user.nome || "")}</td>
-        <td>${escapeHtml(user.email || "")}</td>
-        <td>${escapeHtml(user.profile || user.perfil || "Usuário")}</td>
-        <td><span class="status ${statusClass}">${escapeHtml(status)}</span></td>
-    `;
+async function loadDashboard() {
 
-    tableBody.appendChild(row);
-}
+    try {
 
-function escapeHtml(value) {
-    const div = document.createElement("div");
-    div.textContent = String(value ?? "");
-    return div.innerHTML;
-}
+        const result =
+            await getProdutos();
 
-if (newUserButton) {
-    newUserButton.addEventListener("click", function () {
-        userModal.classList.remove("hidden");
-        document.body.style.overflow = "hidden";
-    });
-}
 
-if (userForm) {
-    userForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
+        const total =
+            result.meta?.total ??
+            result.items.length;
 
-        const submitButton = userForm.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
 
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<span class="button-loading"><span class="spinner"></span>Salvando...</span>';
+        totalProducts.textContent =
+            total;
 
-        try {
-            const userData = {
-                name: document.getElementById("userName").value.trim(),
-                email: document.getElementById("userEmail").value.trim(),
-                password: document.getElementById("userPassword").value,
-                profile: document.getElementById("userProfile").value,
-                status: document.getElementById("userStatus").value
-            };
 
-            const data = await criarUsuario(userData);
+        const productCard =
+            totalProducts.closest(
+                ".card"
+            );
 
-            /* A API pode retornar o usuário criado ou simplesmente os dados enviados. */
-            const savedUser = data?.user || data?.usuario || data || userData;
 
-            renderUser(savedUser, usersTable);
-            renderUser(savedUser, recentUsers);
+        if (productCard) {
 
-            totalUsers.textContent = Number(totalUsers.textContent || 0) + 1;
+            const description =
+                productCard.querySelector(
+                    "small"
+                );
 
-            userForm.reset();
-            userModal.classList.add("hidden");
-            document.body.style.overflow = "";
-        } catch (error) {
-            console.error(error);
-            alert(error.message || "Não foi possível cadastrar o usuário.");
-        } finally {
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
+            if (description) {
+
+                description.textContent =
+                    "Dados da API";
+            }
         }
-    });
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao carregar dashboard:",
+            error
+        );
+
+
+        totalProducts.textContent =
+            "—";
+
+
+        const productCard =
+            totalProducts.closest(
+                ".card"
+            );
+
+
+        if (productCard) {
+
+            const description =
+                productCard.querySelector(
+                    "small"
+                );
+
+            if (description) {
+
+                description.textContent =
+                    "Erro ao consultar API";
+            }
+        }
+    }
 }
+
+
+loadDashboard();
