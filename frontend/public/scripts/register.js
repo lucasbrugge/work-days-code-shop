@@ -1,47 +1,183 @@
-const form = document.getElementById("register-form");
-const alertBox = document.getElementById("alert");
-const submit = document.getElementById("submit");
+const form =
+  document.getElementById("register-form");
 
-if (Auth.isLoggedIn()) window.location.href = "index.html";
+const alertBox =
+  document.getElementById("register-alert");
 
-function showError(msg) {
-  const div = document.createElement("div");
-  div.className = "alert alert-danger";
-  div.textContent = msg;
-  alertBox.replaceChildren(div);
+const submit =
+  document.getElementById("register-button");
+
+
+if (Auth.isLoggedIn()) {
+  window.location.href = "../index.html";
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  alertBox.replaceChildren();
+function showError(msg) {
+  alertBox.classList.remove(
+    "d-none"
+  );
 
-  const name = form.name.value.trim();
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const confirmation = form.password_confirmation.value;
+  alertBox.classList.remove(
+    "alert-success"
+  );
 
-  // validações que o front consegue fazer sozinho
-  if (!name || !email || !password) return showError("Preencha todos os campos.");
-  if (password.length < 6) return showError("A senha deve ter pelo menos 6 caracteres.");
-  if (password !== confirmation) return showError("As senhas não conferem.");
+  alertBox.classList.add(
+    "alert-danger"
+  );
 
-  submit.disabled = true;
-  submit.textContent = "Criando...";
-  try {
-    // 1) cria a conta (o back responde só com o usuário, sem token)
-    await api("/auth/register", { method: "POST", body: { name, email, password } });
+  alertBox.textContent = msg;
+}
 
-    // 2) entra automaticamente, enviando o carrinho de visitante
-    const body = { email, password };
-    if (CartToken.get()) body.guest_token = CartToken.get();
-    const data = await api("/auth/login", { method: "POST", body });
-    Auth.save(data.token, data.user);
+form.addEventListener(
+  "submit",
+  async (e) => {
 
-    window.location.href = "index.html";
-  } catch (err) {
-    showError(err.status === 409 ? "Este e-mail já está cadastrado." : err.message);
-  } finally {
-    submit.disabled = false;
-    submit.textContent = "Criar conta";
+    e.preventDefault();
+
+    alertBox.classList.add(
+      "d-none"
+    );
+
+    const name =
+      form.name.value.trim();
+
+    const email =
+      form.email.value.trim();
+
+    const password =
+      form.password.value;
+
+    const confirmation =
+      form.password_confirmation.value;
+
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmation
+    ) {
+      return showError(
+        "Preencha todos os campos."
+      );
+    }
+
+
+    if (password.length < 8) {
+      return showError(
+        "A senha deve ter pelo menos 8 caracteres."
+      );
+    }
+
+
+    if (password !== confirmation) {
+      return showError(
+        "As senhas não coincidem."
+      );
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Criando conta...";
+
+
+    try {
+
+      await api(
+        "/auth/register",
+        {
+          method: "POST",
+
+          body: {
+            name,
+            email,
+            password,
+
+            password_confirmation:
+              confirmation
+          }
+        }
+      );
+
+      const loginBody = {
+        email,
+        password
+      };
+
+
+      if (CartToken.get()) {
+        loginBody.guest_token =
+          CartToken.get();
+      }
+
+
+      const response = await api(
+        "/auth/login",
+        {
+          method: "POST",
+          body: loginBody
+        }
+      );
+
+      const data =
+        response.data ?? response;
+
+      Auth.save(
+        data.token,
+        data.user
+      );
+
+      if (
+        data.user.role === "admin"
+      ) {
+
+        window.location.href =
+          "../admin/index.html";
+
+        return;
+      }
+
+
+      window.location.href =
+        "../index.html";
+
+
+    } catch (err) {
+
+      if (
+        err instanceof ApiError &&
+        err.status === 422 &&
+        typeof UI !== "undefined"
+      ) {
+
+        UI.fieldErrors(
+          form,
+          err
+        );
+
+      }
+
+      if (err.status === 409) {
+
+        showError(
+          "Este e-mail já está cadastrado."
+        );
+
+        return;
+      }
+
+      showError(
+        err.message ||
+        "Não foi possível criar a conta."
+      );
+
+
+    } finally {
+
+      submit.disabled = false;
+
+      submit.textContent =
+        "Criar conta";
+
+    }
+
   }
-});
+);
