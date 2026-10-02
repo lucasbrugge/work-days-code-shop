@@ -1,325 +1,190 @@
-const CHECKOUT_CART_KEY = "shop_cart";
-const ORDER_KEY = "last_order";
+/* Checkout ligado à API (FRONT-10).
+ * Fluxo: carrinho (GET /cart) -> endereço (GET/POST /addresses) -> pedido (POST /orders).
+ * O servidor valida estoque, congela os preços, baixa o estoque e esvazia o carrinho.
+ */
+(function () {
+  const P = CONFIG.PAGES_ROOT;
 
-const checkoutMoney = (value) =>
-  Number(value).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-
-const CHECKOUT_PRODUCTS = [
-  {
-    id: 1,
-    name: "Abbey Road",
-    artist: "The Beatles",
-    price: 149.90,
-  },
-  {
-    id: 2,
-    name: "The Dark Side of the Moon",
-    artist: "Pink Floyd",
-    price: 179.90,
-  },
-  {
-    id: 3,
-    name: "Back to Black",
-    artist: "Amy Winehouse",
-    price: 59.90,
-  },
-];
-
-function getCheckoutCart() {
-  return JSON.parse(
-    localStorage.getItem(CHECKOUT_CART_KEY) || "[]"
-  );
-}
-
-function getCheckoutProduct(id) {
-  return CHECKOUT_PRODUCTS.find(
-    (product) => product.id === Number(id)
-  );
-}
-
-function calculateCheckoutTotals() {
-  const cart = getCheckoutCart();
-
-  const subtotal = cart.reduce((total, item) => {
-
-    const product = getCheckoutProduct(item.productId);
-
-    if (!product) return total;
-
-    return total + product.price * item.quantity;
-
-  }, 0);
-
-  const shipping =
-    subtotal === 0
-      ? 0
-      : subtotal >= 200
-        ? 0
-        : 24.90;
-
-  return {
-    subtotal,
-    shipping,
-    total: subtotal + shipping,
-  };
-}
-
-function renderCheckoutSummary() {
-
-  const container =
-    document.getElementById("checkout-summary");
-
-  const cart = getCheckoutCart();
-
-  if (!cart.length) {
-
-    container.innerHTML = `
-      <div class="text-center py-3">
-
-        <i class="bi bi-bag fs-2 text-muted-2"></i>
-
-        <p class="text-muted-2 mt-2 mb-3">
-          Seu carrinho está vazio.
-        </p>
-
-        <a href="catalog.html" class="btn btn-accent">
-          Ver catálogo
-        </a>
-
-      </div>
-    `;
-
-    document.getElementById("finish-order").disabled = true;
-
+  // checkout exige login (a spec); o carrinho continua salvo no servidor
+  if (!Auth.isLoggedIn()) {
+    window.location.href = P + "login.html?next=pages/checkout.html";
     return;
   }
 
-  const totals = calculateCheckoutTotals();
+  const form = document.getElementById("checkout-form");
+  const alertBox = document.getElementById("checkout-alert");
+  const summary = document.getElementById("checkout-summary");
+  const savedBox = document.getElementById("saved-addresses");
+  const newBox = document.getElementById("new-address");
+  const finish = document.getElementById("finish-order");
 
-  container.innerHTML = `
+  let cart = null;
+  let addresses = [];
+  let createdAddress = null; // evita criar o mesmo endereço duas vezes se o pedido falhar
 
-    ${cart.map((item) => {
+  function showAlert(message, type = "danger") {
+    const div = document.createElement("div");
+    div.className = `alert alert-${type}`;
+    div.textContent = message;
+    alertBox.replaceChildren(div);
+  }
 
-      const product = getCheckoutProduct(item.productId);
+  const friendly = (err) =>
+    err.status === 501 ? "Esta função ainda não está disponível no servidor." : err.message;
 
-      if (!product) return "";
+  const problemOf = (item) =>
+    item.stock === 0 ? "sem estoque"
+      : item.quantity > item.stock ? `só há ${item.stock} em estoque` : null;
 
-      return `
+  function renderSummary() {
+    if (!cart || !cart.items.length) {
+      summary.innerHTML = `
+        <div class="text-center py-3">
+          <i class="bi bi-bag fs-2 text-muted-2"></i>
+          <p class="text-muted-2 mt-2 mb-3">Seu carrinho está vazio.</p>
+          <a href="${P}catalog.html" class="btn btn-accent">Ver catálogo</a>
+        </div>`;
+      finish.disabled = true;
+      return;
+    }
+
+    const blocked = cart.items.filter(problemOf);
+    summary.innerHTML = `
+      ${cart.items.map((i) => `
         <div class="d-flex justify-content-between mb-3">
-
           <div>
-
-            <strong>
-              ${product.name}
-            </strong>
-
-            <div class="small text-muted-2">
-              ${item.quantity} unidade(s)
-            </div>
-
+            <strong>${Fmt.esc(i.name)}</strong>
+            <div class="small text-muted-2">${i.quantity} x ${Fmt.money(i.price)}</div>
+            ${problemOf(i) ? `<span class="badge text-bg-warning">${Fmt.esc(problemOf(i))}</span>` : ""}
           </div>
+          <strong>${Fmt.money(i.subtotal)}</strong>
+        </div>`).join("")}
+      <hr>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted-2">Subtotal</span><span>${Fmt.money(cart.total)}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-3">
+        <span class="text-muted-2">Frete</span>
+        <span class="small text-muted-2">calculado ao confirmar</span>
+      </div>
+      <p class="small text-muted-2 mb-0">
+        O total final é calculado pelo servidor ao criar o pedido.
+        O pagamento é simulado, para fins acadêmicos.
+      </p>`;
 
-          <strong>
-            ${checkoutMoney(
-              product.price * item.quantity
-            )}
-          </strong>
-
-        </div>
-      `;
-
-    }).join("")}
-
-    <hr>
-
-    <div class="d-flex justify-content-between mb-2">
-      <span class="text-muted-2">
-        Subtotal
-      </span>
-
-      <span>
-        ${checkoutMoney(totals.subtotal)}
-      </span>
-    </div>
-
-    <div class="d-flex justify-content-between mb-3">
-      <span class="text-muted-2">
-        Frete
-      </span>
-
-      <span>
-        ${
-          totals.shipping === 0
-            ? "Grátis"
-            : checkoutMoney(totals.shipping)
-        }
-      </span>
-    </div>
-
-    <div class="d-flex justify-content-between">
-
-      <strong>
-        Total
-      </strong>
-
-      <strong class="fs-5">
-        ${checkoutMoney(totals.total)}
-      </strong>
-
-    </div>
-  `;
-}
-
-function showCheckoutError(message) {
-
-  document.getElementById("checkout-alert").innerHTML = `
-    <div class="alert alert-danger">
-      ${message}
-    </div>
-  `;
-}
-
-function getFormData() {
-
-  const form =
-    document.getElementById("checkout-form");
-
-  return {
-    name: form.name.value.trim(),
-    email: form.email.value.trim(),
-    phone: form.phone.value.trim(),
-    zip: form.zip.value.trim(),
-    address: form.address.value.trim(),
-    city: form.city.value.trim(),
-    state: form.state.value.trim(),
-    number: form.number.value.trim(),
-  };
-}
-
-function validateForm(data) {
-
-  if (!data.name) {
-    return "Informe seu nome.";
-  }
-
-  if (!data.email) {
-    return "Informe seu e-mail.";
-  }
-
-  if (!data.zip) {
-    return "Informe o CEP.";
-  }
-
-  if (!data.address) {
-    return "Informe o endereço.";
-  }
-
-  if (!data.city) {
-    return "Informe a cidade.";
-  }
-
-  if (!data.state) {
-    return "Informe o estado.";
-  }
-
-  if (!data.number) {
-    return "Informe o número.";
-  }
-
-  return null;
-}
-
-function createMockOrder(customer, cart, totals) {
-
-  return {
-    id: Date.now(),
-
-    status: "pending",
-
-    created_at: new Date().toISOString(),
-
-    customer,
-
-    items: cart.map((item) => {
-
-      const product =
-        getCheckoutProduct(item.productId);
-
-      return {
-        product_id: product.id,
-        name: product.name,
-        artist: product.artist,
-        price: product.price,
-        quantity: item.quantity,
-      };
-
-    }),
-
-    subtotal: totals.subtotal,
-    shipping: totals.shipping,
-    total: totals.total,
-  };
-}
-
-document
-  .getElementById("checkout-form")
-  .addEventListener("submit", (event) => {
-
-    event.preventDefault();
-
-    const alert =
-      document.getElementById("checkout-alert");
-
-    alert.innerHTML = "";
-
-    const data = getFormData();
-
-    const error = validateForm(data);
-
-    if (error) {
-      showCheckoutError(error);
-      return;
+    if (blocked.length) {
+      showAlert("Ajuste no carrinho os itens sem estoque suficiente para continuar.", "warning");
+      finish.disabled = true;
     }
+  }
 
-    const cart = getCheckoutCart();
+  function renderAddresses() {
+    const hasSaved = addresses.length > 0;
+    savedBox.innerHTML = hasSaved
+      ? addresses.map((a, idx) => `
+          <label class="d-flex gap-2 border rounded-3 p-3 mb-2" style="cursor:pointer;">
+            <input type="radio" name="address_choice" value="${a.id}" ${idx === 0 ? "checked" : ""}>
+            <span class="small">${Fmt.address(a)}</span>
+          </label>`).join("") + `
+          <label class="d-flex gap-2 border rounded-3 p-3 mb-2" style="cursor:pointer;">
+            <input type="radio" name="address_choice" value="new">
+            <span class="small fw-semibold">Usar um novo endereço</span>
+          </label>`
+      : `<input type="hidden" name="address_choice" value="new">`;
+    toggleNew();
+  }
 
-    if (!cart.length) {
-      showCheckoutError(
-        "Não é possível finalizar um pedido com o carrinho vazio."
-      );
+  const choice = () => form.querySelector('[name="address_choice"]:checked, [name="address_choice"][type="hidden"]')?.value;
 
-      return;
+  function toggleNew() {
+    newBox.hidden = choice() !== "new";
+  }
+
+  function readNewAddress() {
+    const f = (n) => form.elements[n].value.trim();
+    return {
+      zip_code: f("zip_code"),
+      street: f("street"),
+      number: f("number"),
+      complement: f("complement") || null,
+      neighborhood: f("neighborhood"),
+      city: f("city"),
+      state: f("state").toUpperCase(),
+    };
+  }
+
+  function validateAddress(a) {
+    if (!a.zip_code) return "Informe o CEP.";
+    if (!a.street) return "Informe a rua.";
+    if (!a.number) return "Informe o número.";
+    if (!a.neighborhood) return "Informe o bairro.";
+    if (!a.city) return "Informe a cidade.";
+    if (!/^[A-Z]{2}$/.test(a.state)) return "Informe o estado com 2 letras (ex.: PR).";
+    return null;
+  }
+
+  async function load() {
+    UI.loading(summary);
+    try {
+      cart = await api("/cart");
+    } catch (err) {
+      return UI.error(summary, err);
     }
+    try {
+      addresses = (await api("/addresses")) || [];
+    } catch (err) {
+      addresses = [];
+      showAlert(friendly(err), "warning");
+      finish.disabled = true;
+    }
+    renderAddresses();
+    renderSummary();
+  }
 
-    const button =
-      document.getElementById("finish-order");
-
-    button.disabled = true;
-    button.innerHTML = `
-      <span class="spinner-border spinner-border-sm me-2"></span>
-      Finalizando...
-    `;
-
-    const totals = calculateCheckoutTotals();
-
-    const order =
-      createMockOrder(data, cart, totals);
-
-    localStorage.setItem(
-      ORDER_KEY,
-      JSON.stringify(order)
-    );
-
-    localStorage.removeItem(CHECKOUT_CART_KEY);
-
-    window.location.href =
-      `order.html?id=${order.id}`;
+  form.addEventListener("change", (e) => {
+    if (e.target.name === "address_choice") toggleNew();
   });
 
-document.addEventListener(
-  "DOMContentLoaded",
-  renderCheckoutSummary
-);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    alertBox.replaceChildren();
+    if (!cart || !cart.items.length) return showAlert("Seu carrinho está vazio.");
+
+    const label = finish.innerHTML;
+    finish.disabled = true;
+    finish.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finalizando...';
+
+    try {
+      let addressId = choice();
+
+      if (addressId === "new") {
+        const data = readNewAddress();
+        const problem = validateAddress(data);
+        if (problem) throw new Error(problem);
+
+        const key = JSON.stringify(data);
+        if (!createdAddress || createdAddress.key !== key) {
+          const created = await api("/addresses", { method: "POST", body: data });
+          createdAddress = { key, id: created.id };
+        }
+        addressId = createdAddress.id;
+      }
+
+      const order = await api("/orders", {
+        method: "POST",
+        body: { address_id: Number(addressId) },
+      });
+
+      // o servidor esvaziou o carrinho: descartamos o token antigo
+      CartToken.clear();
+      setCartBadge(0);
+      window.location.href = `${P}order.html?id=${order.id}&new=1`;
+    } catch (err) {
+      showAlert(friendly(err));
+      finish.disabled = false;
+      finish.innerHTML = label;
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", load);
+})();

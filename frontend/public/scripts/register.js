@@ -2,7 +2,7 @@ const form = document.getElementById("register-form");
 const alertBox = document.getElementById("alert");
 const submit = document.getElementById("submit");
 
-if (Auth.isLoggedIn()) window.location.href = "index.html";
+if (Auth.isLoggedIn()) window.location.href = CONFIG.SITE_ROOT + "index.html";
 
 function showError(msg) {
   const div = document.createElement("div");
@@ -15,21 +15,21 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   alertBox.replaceChildren();
 
-  const name = form.name.value.trim();
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const confirmation = form.password_confirmation.value;
+  const name = form.elements.name.value.trim(); // form.name colide com a propriedade nativa do <form>
+  const email = form.elements.email.value.trim();
+  const password = form.elements.password.value;
+  const confirmation = form.elements.password_confirmation.value;
 
   // validações que o front consegue fazer sozinho
   if (!name || !email || !password) return showError("Preencha todos os campos.");
-  if (password.length < 6) return showError("A senha deve ter pelo menos 6 caracteres.");
+  if (password.length < 8) return showError("A senha deve ter pelo menos 8 caracteres.");
   if (password !== confirmation) return showError("As senhas não conferem.");
 
   submit.disabled = true;
   submit.textContent = "Criando...";
   try {
     // 1) cria a conta (o back responde só com o usuário, sem token)
-    await api("/auth/register", { method: "POST", body: { name, email, password } });
+    await api("/auth/register", { method: "POST", body: { name, email, password, password_confirmation: confirmation } });
 
     // 2) entra automaticamente, enviando o carrinho de visitante
     const body = { email, password };
@@ -37,9 +37,12 @@ form.addEventListener("submit", async (e) => {
     const data = await api("/auth/login", { method: "POST", body });
     Auth.save(data.token, data.user);
 
-    window.location.href = "index.html";
+    window.location.href = CONFIG.SITE_ROOT + "index.html";
   } catch (err) {
-    showError(err.status === 409 ? "Este e-mail já está cadastrado." : err.message);
+    const fields = Object.values(err.data?.errors || {}).flat();
+    if (err.status === 409) showError("Este e-mail já está cadastrado.");
+    else if (err.status === 422 && fields.length) showError(fields.join(" "));
+    else showError(err.message);
   } finally {
     submit.disabled = false;
     submit.textContent = "Criar conta";

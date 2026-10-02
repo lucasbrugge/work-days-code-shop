@@ -3,13 +3,26 @@ const alertBox = document.getElementById("alert");
 const submit = document.getElementById("submit");
 
 // Quem já está logado não precisa ver esta página
-if (Auth.isLoggedIn()) window.location.href = "index.html";
+if (Auth.isLoggedIn()) window.location.href = CONFIG.SITE_ROOT + "index.html";
 
 function showError(msg) {
   const div = document.createElement("div");
   div.className = "alert alert-danger";
   div.textContent = msg; // textContent: nunca interpreta HTML vindo do servidor
   alertBox.replaceChildren(div);
+}
+
+// ?next=... só é aceito se apontar para dentro do próprio site
+// (evita redirecionar o usuário para um site externo)
+function safeNext() {
+  const next = new URLSearchParams(location.search).get("next");
+  if (!next) return null;
+  try {
+    const url = new URL(next, CONFIG.SITE_ROOT);
+    return url.href.startsWith(CONFIG.SITE_ROOT) ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 form.addEventListener("submit", async (e) => {
@@ -30,9 +43,7 @@ form.addEventListener("submit", async (e) => {
     const data = await api("/auth/login", { method: "POST", body });
     Auth.save(data.token, data.user);
 
-    const next = new URLSearchParams(location.search).get("next");
-    window.location.href =
-      next || (data.user.role === "admin" ? "public/admin/index.html" : "index.html");
+    window.location.href = safeNext() || CONFIG.SITE_ROOT + "index.html";
   } catch (err) {
     showError(err.status === 401 ? "E-mail ou senha inválidos." : err.message);
   } finally {

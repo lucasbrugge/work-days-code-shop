@@ -1,8 +1,17 @@
+// O back devolve erros de validação como error.fields = { campo: "mensagem" }.
+// Normalizamos para { campo: ["mensagem"] }, que é o formato que o UI.fieldErrors espera.
+function normalizeFieldErrors(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v : [v]])
+  );
+}
+
 class ApiError extends Error {
   constructor(status, message, errors) {
     super(message || "Erro na requisição");
     this.status = status;
-    this.data = { message, errors: errors || {} };
+    this.data = { message, errors: normalizeFieldErrors(errors) };
   }
 }
 
@@ -36,12 +45,15 @@ async function request(path, { method = "GET", body, params } = {}) {
   if (!res.ok || json?.success === false) {
     if (res.status === 401 && Auth.isLoggedIn()) {
       Auth.clear();
-      window.location.href = CONFIG.SITE_ROOT + "login.html";
+      window.location.href = CONFIG.PAGES_ROOT + "login.html";
     }
     const err = json?.error;
     const message = typeof err === "string" ? err : err?.message;
-    throw new ApiError(res.status, message, err?.errors);
+    throw new ApiError(res.status, message, err?.errors ?? err?.fields);
   }
+  // o back devolve o token do carrinho de visitante em data.guest_token
+  if (json?.data?.guest_token) CartToken.set(json.data.guest_token);
+
   return json;
 }
 
