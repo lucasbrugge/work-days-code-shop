@@ -337,6 +337,39 @@ async function getProdutos() {
 
 
 /**
+ * Lista pedidos para o painel administrativo.
+ */
+async function getAdminOrders(status = "") {
+
+    const query = status
+        ? `?status=${encodeURIComponent(status)}`
+        : "";
+
+    return apiFetch(
+        `/admin/orders${query}`,
+        { method: "GET" }
+    );
+
+}
+
+
+/**
+ * Atualiza o status de um pedido no painel administrativo.
+ */
+async function updateAdminOrderStatus(id, status) {
+
+    return apiFetch(
+        `/admin/orders/${encodeURIComponent(id)}/status`,
+        {
+            method: "PATCH",
+            body: JSON.stringify({ status })
+        }
+    );
+
+}
+
+
+/**
  * Busca um produto pelo ID.
  */
 async function getProduto(

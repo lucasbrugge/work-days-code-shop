@@ -337,16 +337,24 @@ $router->post(
 
 $router->get(
     '/api/admin/orders',
-    fn() => NotImplementedController::handle(
-        'GET /api/admin/orders'
-    )
+    fn() => OrderController::adminIndex(),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 $router->patch(
     '/api/admin/orders/{id}/status',
-    fn($id) => NotImplementedController::handle(
-        "PATCH /api/admin/orders/{$id}/status"
-    )
+    fn($id) => OrderController::adminUpdateStatus($id),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
 );
 
 /*

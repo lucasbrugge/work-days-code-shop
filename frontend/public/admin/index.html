@@ -30,6 +30,8 @@
 
           <a href="#" class="menu-item" data-page="produtos"> Produtos </a>
 
+          <a href="#" class="menu-item" data-page="pedidos"> Pedidos </a>
+
           <a href="#" class="menu-item" data-page="categorias"> Categorias </a>
         </nav>
 
@@ -78,9 +80,9 @@
             <div class="card">
               <span class="card-title"> Pedidos </span>
 
-              <strong> — </strong>
+              <strong id="totalOrders"> — </strong>
 
-              <small> API não disponível </small>
+              <small> Carregando... </small>
             </div>
           </div>
 
@@ -88,13 +90,8 @@
             <h2>Informações</h2>
 
             <p>
-              O backend atual disponibiliza o gerenciamento de produtos e
-              categorias para o painel administrativo.
-            </p>
-
-            <p>
-              Os endpoints administrativos de usuários e pedidos ainda não estão
-              implementados no backend.
+              Consulte os pedidos da loja e atualize o andamento de cada pedido.
+              A área administrativa de usuários ainda não está disponível.
             </p>
           </div>
         </section>
@@ -216,6 +213,53 @@
             <div id="productsEmpty" class="empty-state hidden">
               Nenhum produto encontrado.
             </div>
+          </div>
+        </section>
+
+        <!-- PEDIDOS -->
+
+        <section id="pedidos" class="page-section hidden">
+          <div class="page-header">
+            <div>
+              <h1>Pedidos</h1>
+              <p>Consulte pedidos e atualize o andamento da entrega.</p>
+            </div>
+          </div>
+
+          <div id="orderMessage" class="message"></div>
+
+          <div class="content-card product-filters">
+            <div class="filter-grid">
+              <div class="form-field">
+                <label for="orderFilterStatus">Status</label>
+                <select id="orderFilterStatus">
+                  <option value="">Todos os pedidos</option>
+                  <option value="pending_payment">Aguardando pagamento</option>
+                  <option value="paid">Pago</option>
+                  <option value="shipped">Enviado</option>
+                  <option value="delivered">Entregue</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div id="ordersLoading" class="loading">Carregando pedidos...</div>
+            <table id="ordersTableContainer" class="hidden">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Itens</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Atualizar status</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+            <div id="ordersEmpty" class="empty-state hidden">Nenhum pedido encontrado.</div>
           </div>
         </section>
 
@@ -427,6 +471,8 @@
     <script src="js/produtos.js"></script>
 
     <script src="js/categorias.js"></script>
+
+    <script src="js/pedidos.js"></script>
 
     <script src="js/admin.js"></script>
   </body>

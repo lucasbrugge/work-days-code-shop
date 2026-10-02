@@ -74,6 +74,16 @@ async function loadDashboard() {
             }
         }
     }
+
+    try {
+        const result = await getAdminOrders();
+        const totalOrders = document.getElementById("totalOrders");
+        const orderCard = totalOrders?.closest(".card");
+        if (totalOrders) totalOrders.textContent = result.data?.length ?? 0;
+        orderCard?.querySelector("small")?.replaceChildren("Todos os pedidos");
+    } catch (error) {
+        console.error("Erro ao carregar pedidos do dashboard:", error);
+    }
 }
 
 
