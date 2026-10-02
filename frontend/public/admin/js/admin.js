@@ -1,50 +1,144 @@
-const menuItems = document.querySelectorAll(".menu-item");
-const pages = document.querySelectorAll(".page-section");
+const menuItems =
+    document.querySelectorAll(
+        ".menu-item"
+    );
 
-menuItems.forEach(function (item) {
-    item.addEventListener("click", function (event) {
-        event.preventDefault();
+const pages =
+    document.querySelectorAll(
+        ".page-section"
+    );
 
-        const pageName = item.dataset.page;
 
-        menuItems.forEach(menu => menu.classList.remove("active"));
-        item.classList.add("active");
+/*
+|--------------------------------------------------------------------------
+| Proteção do painel
+|--------------------------------------------------------------------------
+*/
 
-        pages.forEach(page => page.classList.add("hidden"));
+if (
+    !Auth.isLoggedIn() ||
+    !Auth.isAdmin()
+) {
 
-        const selectedPage = document.getElementById(pageName);
-        if (selectedPage) selectedPage.classList.remove("hidden");
-    });
-});
+    window.location.href =
+        "../pages/admin-login.html";
+}
 
-const logoutButton = document.getElementById("logoutButton");
 
-logoutButton.addEventListener("click", function () {
-    sessionStorage.removeItem("loggedIn");
-    sessionStorage.removeItem("token");
-    location.reload();
-});
+/*
+|--------------------------------------------------------------------------
+| Navegação
+|--------------------------------------------------------------------------
+*/
 
-document.querySelectorAll("[data-close-modal]").forEach(function (button) {
-    button.addEventListener("click", function () {
-        const modal = button.closest(".modal-overlay");
-        if (modal) modal.classList.add("hidden");
-        document.body.style.overflow = "";
-    });
-});
+menuItems.forEach(item => {
 
-document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
-    overlay.addEventListener("click", function (event) {
-        if (event.target === overlay) {
-            overlay.classList.add("hidden");
-            document.body.style.overflow = "";
+    item.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+
+
+            const pageName =
+                item.dataset.page;
+
+
+            menuItems.forEach(
+                menu =>
+                    menu.classList.remove(
+                        "active"
+                    )
+            );
+
+
+            item.classList.add(
+                "active"
+            );
+
+
+            pages.forEach(
+                page =>
+                    page.classList.add(
+                        "hidden"
+                    )
+            );
+
+
+            const selectedPage =
+                document.getElementById(
+                    pageName
+                );
+
+
+            if (selectedPage) {
+
+                selectedPage.classList.remove(
+                    "hidden"
+                );
+            }
+
         }
-    });
+    );
+
 });
 
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-        document.querySelectorAll(".modal-overlay").forEach(modal => modal.classList.add("hidden"));
-        document.body.style.overflow = "";
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+
+const logoutButton =
+    document.getElementById(
+        "logoutButton"
+    );
+
+
+logoutButton.addEventListener(
+    "click",
+    async () => {
+
+        const token =
+            Auth.getToken();
+
+
+        try {
+
+            if (token) {
+
+                await api(
+                    "/auth/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao realizar logout:",
+                error
+            );
+
+        } finally {
+
+            Auth.clear();
+
+            sessionStorage.removeItem(
+                "loggedIn"
+            );
+
+            sessionStorage.removeItem(
+                "token"
+            );
+
+
+            window.location.href =
+                "../pages/admin-login.html";
+        }
+
     }
-});
+);

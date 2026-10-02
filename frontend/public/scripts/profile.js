@@ -27,7 +27,8 @@
 
   // junta as mensagens por campo (422) ou usa a mensagem geral
   function errorText(err) {
-    if (err.status === 501) return "Esta função ainda não está disponível no servidor.";
+    if (err.status === 501)
+      return "Esta função ainda não está disponível no servidor.";
     const fields = Object.values(err.data?.errors || {}).flat();
     return err.status === 422 && fields.length ? fields.join(" ") : err.message;
   }
@@ -50,19 +51,32 @@
 
     const name = profileForm.elements.name.value.trim();
     const email = profileForm.elements.email.value.trim();
-    if (name.length < 3) return say(profileAlert, "O nome deve ter pelo menos 3 caracteres.");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return say(profileAlert, "Informe um e-mail válido.");
+    if (name.length < 3)
+      return say(profileAlert, "O nome deve ter pelo menos 3 caracteres.");
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      return say(profileAlert, "Informe um e-mail válido.");
 
     const btn = document.getElementById("profile-save");
     btn.disabled = true;
     try {
-      const data = await api("/profile", { method: "PUT", body: { name, email } });
+      const data = await api("/profile", {
+        method: "PUT",
+        body: { name, email },
+      });
       const updated = data?.user ?? data ?? {};
       // mantém a sessão (e a navbar) coerente com os dados novos
-      Auth.save(Auth.getToken(), { ...Auth.getUser(), name, email, ...updated });
+      Auth.save(Auth.getToken(), {
+        ...Auth.getUser(),
+        name,
+        email,
+        ...updated,
+      });
       say(profileAlert, "Dados atualizados.", "success");
     } catch (err) {
-      say(profileAlert, err.status === 409 ? "Este e-mail já está em uso." : errorText(err));
+      say(
+        profileAlert,
+        err.status === 409 ? "Este e-mail já está em uso." : errorText(err),
+      );
     } finally {
       btn.disabled = false;
     }
@@ -75,7 +89,9 @@
       UI.empty(addressList, "Você ainda não tem endereços cadastrados.");
       return;
     }
-    addressList.innerHTML = addresses.map((a) => `
+    addressList.innerHTML = addresses
+      .map(
+        (a) => `
       <div class="d-flex justify-content-between align-items-start gap-3 border rounded-3 p-3 mb-2">
         <div class="small">${Fmt.address(a)}</div>
         <div class="d-flex gap-1 flex-shrink-0">
@@ -84,7 +100,9 @@
           <button type="button" class="btn btn-sm btn-outline-danger" data-delete="${a.id}" aria-label="Excluir endereço">
             <i class="bi bi-trash"></i></button>
         </div>
-      </div>`).join("");
+      </div>`,
+      )
+      .join("");
   }
 
   async function loadAddresses() {
@@ -94,7 +112,11 @@
       renderAddresses();
     } catch (err) {
       addressList.replaceChildren();
-      say(addressAlert, errorText(err), err.status === 501 ? "warning" : "danger");
+      say(
+        addressAlert,
+        errorText(err),
+        err.status === 501 ? "warning" : "danger",
+      );
       document.getElementById("btn-new-address").disabled = true;
     }
   }
@@ -103,9 +125,19 @@
 
   function openForm(address) {
     addressAlert.replaceChildren();
-    document.getElementById("address-form-title").textContent = address ? "Editar endereço" : "Novo endereço";
+    document.getElementById("address-form-title").textContent = address
+      ? "Editar endereço"
+      : "Novo endereço";
     f("id").value = address?.id ?? "";
-    ["zip_code", "street", "number", "complement", "neighborhood", "city", "state"].forEach((n) => {
+    [
+      "zip_code",
+      "street",
+      "number",
+      "complement",
+      "neighborhood",
+      "city",
+      "state",
+    ].forEach((n) => {
       f(n).value = address?.[n] ?? "";
     });
     addressForm.hidden = false;
@@ -123,12 +155,17 @@
     if (!a.number) return "Informe o número.";
     if (!a.neighborhood) return "Informe o bairro.";
     if (!a.city) return "Informe a cidade.";
-    if (!/^[A-Z]{2}$/.test(a.state)) return "Informe o estado com 2 letras (ex.: PR).";
+    if (!/^[A-Z]{2}$/.test(a.state))
+      return "Informe o estado com 2 letras (ex.: PR).";
     return null;
   }
 
-  document.getElementById("btn-new-address").addEventListener("click", () => openForm(null));
-  document.getElementById("address-cancel").addEventListener("click", closeForm);
+  document
+    .getElementById("btn-new-address")
+    .addEventListener("click", () => openForm(null));
+  document
+    .getElementById("address-cancel")
+    .addEventListener("click", closeForm);
 
   addressList.addEventListener("click", async (e) => {
     const edit = e.target.closest("[data-edit]");
@@ -168,10 +205,17 @@
     const btn = document.getElementById("address-save");
     btn.disabled = true;
     try {
-      await api(id ? `/addresses/${id}` : "/addresses", { method: id ? "PUT" : "POST", body: data });
+      await api(id ? `/addresses/${id}` : "/addresses", {
+        method: id ? "PUT" : "POST",
+        body: data,
+      });
       closeForm();
       await loadAddresses();
-      say(addressAlert, id ? "Endereço atualizado." : "Endereço cadastrado.", "success");
+      say(
+        addressAlert,
+        id ? "Endereço atualizado." : "Endereço cadastrado.",
+        "success",
+      );
     } catch (err) {
       say(addressAlert, errorText(err));
     } finally {

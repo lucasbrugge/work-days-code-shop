@@ -66,4 +66,4 @@ form.addEventListener("submit", async (e) => {
     submit.disabled = false;
     submit.textContent = "Entrar";
   }
-);
+});
