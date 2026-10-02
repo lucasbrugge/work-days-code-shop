@@ -1,35 +1,33 @@
 function renderLayout() {
-  const R = CONFIG.SITE_ROOT;   // raiz do site
-  const P = CONFIG.PAGES_ROOT;  // pasta pages/
   const page = document.body.dataset.page;
   const active = (name) => (page === name ? "active" : "");
   const logged = Auth.isLoggedIn();
 
   const links = `
-<li class="nav-item"><a class="nav-link ${active("catalog")}" href="${P}catalog.html">Catálogo</a></li>    ${
+<li class="nav-item"><a class="nav-link ${active("catalog")}" href="catalog.html">Catálogo</a></li>    ${
     logged
       ? `
-      <li class="nav-item"><a class="nav-link ${active("orders")}" href="${P}orders.html">Meus pedidos</a></li>
-      <li class="nav-item"><a class="nav-link ${active("profile")}" href="${P}profile.html">Perfil</a></li>`
+      <li class="nav-item"><a class="nav-link ${active("orders")}" href="orders.html">Meus pedidos</a></li>
+      <li class="nav-item"><a class="nav-link ${active("profile")}" href="profile.html">Perfil</a></li>`
       : ""
   }
     ${
       Auth.isAdmin()
         ? `
-      <li class="nav-item"><a class="nav-link ${active("admin")}" href="${P}admin-login.html">Painel</a></li>`
+      <li class="nav-item"><a class="nav-link ${active("admin")}" href="admin/products.html">Painel</a></li>`
         : ""
     }
   `;
 
   const authButtons = logged
     ? `<button id="btn-logout" class="btn btn-light border">Sair</button>`
-    : `<a class="btn btn-light border" href="${P}login.html">Entrar</a>
-       <a class="btn btn-accent" href="${P}register.html">Criar conta</a>`;
+    : `<a class="btn btn-light border" href="login.html">Entrar</a>
+       <a class="btn btn-accent" href="register.html">Criar conta</a>`;
 
   document.getElementById("navbar").innerHTML = `
     <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom py-2">
       <div class="container">
-        <a class="navbar-brand fs-4 d-flex align-items-center gap-2" href="${R}index.html">
+        <a class="navbar-brand fs-4 d-flex align-items-center gap-2" href="index.html">
           <i class="bi bi-vinyl-fill text-accent"></i>
           <span>Groove <span class="text-accent">Discos</span></span>
         </a>
@@ -42,7 +40,7 @@ function renderLayout() {
           <ul class="navbar-nav me-auto ms-lg-3">${links}</ul>
           <div class="d-flex align-items-center gap-2 flex-wrap my-2 my-lg-0">
             ${authButtons}
-            <a class="btn btn-outline-accent position-relative" href="${P}cart.html">
+            <a class="btn btn-outline-accent position-relative" href="cart.html">
               <i class="bi bi-bag"></i> Carrinho
               <span id="cart-count" class="badge rounded-pill cart-badge position-absolute top-0 start-100 translate-middle">0</span>
             </a>
@@ -63,10 +61,10 @@ function renderLayout() {
           <div class="col-6 col-lg-3">
             <h6 class="fw-bold">Loja</h6>
             <ul class="list-unstyled small mb-0">
-              <li><a href="${P}catalog.html">Catálogo</a></li>
-              <li><a href="${P}cart.html">Carrinho</a></li>
-              <li><a href="${P}orders.html">Meus pedidos</a></li>
-              <li><a href="${P}profile.html">Perfil</a></li>
+              <li><a href="catalog.html">Catálogo</a></li>
+              <li><a href="cart.html">Carrinho</a></li>
+              <li><a href="orders.html">Meus pedidos</a></li>
+              <li><a href="profile.html">Perfil</a></li>
             </ul>
           </div>
           <div class="col-6 col-lg-4">
@@ -80,31 +78,37 @@ function renderLayout() {
       </div>
     </footer>`;
 
-  refreshCartBadge();
+  document.getElementById("btn-logout")?.addEventListener(
+    "click",
+    async () => {
 
-  document.getElementById("btn-logout")?.addEventListener("click", async () => {
-    try { await api("/auth/logout", { method: "POST" }); } catch (e) { /* sai mesmo se a API falhar */ }
-    Auth.clear();
-    window.location.href = R + "index.html";
-  });
+      try {
+
+        await api(
+          "/auth/logout",
+          {
+            method: "POST"
+          }
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Erro ao realizar logout:",
+          error
+        );
+
+      } finally {
+
+        Auth.clear();
+
+        window.location.href =
+          "index.html";
+
+      }
+
+    }
+  );
 }
 
 document.addEventListener("DOMContentLoaded", renderLayout);
-
-// ---------- contador do carrinho (FRONT-18) ----------
-function setCartBadge(count) {
-  const badge = document.getElementById("cart-count");
-  if (badge) badge.textContent = count;
-}
-
-// Só consulta a API se já existe um carrinho (token salvo).
-// Assim, visitar o site não cria carrinhos vazios no banco.
-async function refreshCartBadge() {
-  if (!CartToken.get()) return setCartBadge(0);
-  try {
-    const cart = await api("/cart");
-    setCartBadge(cart.total_items);
-  } catch (e) {
-    /* mantém o valor atual */
-  }
-}

@@ -8,42 +8,218 @@ function normalizeFieldErrors(raw) {
 }
 
 class ApiError extends Error {
-  constructor(status, message, errors) {
+  constructor(status, message, fields = {}) {
     super(message || "Erro na requisição");
+
+    this.name = "ApiError";
     this.status = status;
     this.data = { message, errors: normalizeFieldErrors(errors) };
   }
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Token do carrinho visitante
+|--------------------------------------------------------------------------
+*/
+
 const CartToken = {
-  get() { return localStorage.getItem("guest_token"); },
-  set(t) { localStorage.setItem("guest_token", t); },
-  clear() { localStorage.removeItem("guest_token"); },
+  get() {
+    return localStorage.getItem(
+      "guest_token"
+    );
+  },
+
+  set(token) {
+    localStorage.setItem(
+      "guest_token",
+      token
+    );
+  },
+
+  clear() {
+    localStorage.removeItem(
+      "guest_token"
+    );
+  }
 };
 
-// Único lugar do front que faz fetch (FRONT-19)
-async function request(path, { method = "GET", body, params } = {}) {
-  const url = new URL(CONFIG.API_URL + path);
+
+/*
+|--------------------------------------------------------------------------
+| Request
+|--------------------------------------------------------------------------
+|
+| Único local do frontend responsável por realizar fetch.
+|
+*/
+
+async function request(
+  path,
+  {
+    method = "GET",
+    body,
+    params
+  } = {}
+) {
+
+  /*
+  |--------------------------------------------------------------------------
+  | URL
+  |--------------------------------------------------------------------------
+  */
+
+  const url = new URL(
+    CONFIG.API_URL + path
+  );
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Query Params
+  |--------------------------------------------------------------------------
+  */
+
   if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== "" && v != null) url.searchParams.set(k, v);
-    });
+    Object.entries(params).forEach(
+      ([key, value]) => {
+
+        if (
+          value !== "" &&
+          value !== null &&
+          value !== undefined
+        ) {
+          url.searchParams.set(
+            key,
+            value
+          );
+        }
+
+      }
+    );
   }
 
-  const headers = { Accept: "application/json" };
-  if (body) headers["Content-Type"] = "application/json";
-  if (Auth.getToken()) headers["Authorization"] = `Bearer ${Auth.getToken()}`;
-  if (CartToken.get()) headers["X-Guest-Token"] = CartToken.get();
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const json = res.status === 204 ? null : await res.json().catch(() => null);
+  /*
+  |--------------------------------------------------------------------------
+  | Headers
+  |--------------------------------------------------------------------------
+  */
 
-  if (!res.ok || json?.success === false) {
-    if (res.status === 401 && Auth.isLoggedIn()) {
+  const headers = {
+    Accept: "application/json"
+  };
+
+
+  if (body) {
+    headers["Content-Type"] =
+      "application/json";
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Token de autenticação
+  |--------------------------------------------------------------------------
+  */
+
+  const authToken =
+    Auth.getToken();
+
+  if (authToken) {
+    headers["Authorization"] =
+      `Bearer ${authToken}`;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Token do carrinho visitante
+  |--------------------------------------------------------------------------
+  */
+
+  const guestToken =
+    CartToken.get();
+
+  if (guestToken) {
+    headers["X-Guest-Token"] =
+      guestToken;
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Requisição
+  |--------------------------------------------------------------------------
+  */
+
+  const response = await fetch(
+    url,
+    {
+      method,
+      headers,
+
+      body: body
+        ? JSON.stringify(body)
+        : undefined
+    }
+  );
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Token de visitante retornado pelo backend
+  |--------------------------------------------------------------------------
+  */
+
+  const newGuestToken =
+    response.headers.get(
+      "X-Guest-Token"
+    );
+
+  if (newGuestToken) {
+    CartToken.set(
+      newGuestToken
+    );
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Corpo da resposta
+  |--------------------------------------------------------------------------
+  */
+
+  const json =
+    response.status === 204
+      ? null
+      : await response
+          .json()
+          .catch(() => null);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Tratamento de erros
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    !response.ok ||
+    json?.success === false
+  ) {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Token inválido ou expirado
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+      response.status === 401 &&
+      Auth.isLoggedIn()
+    ) {
       Auth.clear();
       window.location.href = CONFIG.PAGES_ROOT + "login.html";
     }
@@ -57,14 +233,50 @@ async function request(path, { method = "GET", body, params } = {}) {
   return json;
 }
 
-// Respostas simples: devolve só o "data"
-async function api(path, options) {
-  const json = await request(path, options);
+
+/*
+|--------------------------------------------------------------------------
+| API
+|--------------------------------------------------------------------------
+|
+| Respostas comuns:
+|
+| {
+|   success: true,
+|   data: {...},
+|   error: null
+| }
+|
+| Retornamos apenas "data".
+|
+*/
+
+async function api(
+  path,
+  options
+) {
+  const json =
+    await request(
+      path,
+      options
+    );
+
   return json?.data;
 }
 
-// Listas paginadas: devolve { items, meta }
-async function apiList(path, options) {
-  const json = await request(path, options);
-  return { items: json?.data ?? [], meta: json?.meta };
+
+async function apiList(
+  path,
+  options
+) {
+  const json =
+    await request(
+      path,
+      options
+    );
+
+  return {
+    items: json?.data ?? [],
+    meta: json?.meta
+  };
 }

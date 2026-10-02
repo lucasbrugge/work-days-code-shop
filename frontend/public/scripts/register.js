@@ -1,14 +1,22 @@
-const form = document.getElementById("register-form");
-const alertBox = document.getElementById("alert");
-const submit = document.getElementById("submit");
+const form =
+  document.getElementById("register-form");
 
 if (Auth.isLoggedIn()) window.location.href = CONFIG.SITE_ROOT + "index.html";
 
 function showError(msg) {
-  const div = document.createElement("div");
-  div.className = "alert alert-danger";
-  div.textContent = msg;
-  alertBox.replaceChildren(div);
+  alertBox.classList.remove(
+    "d-none"
+  );
+
+  alertBox.classList.remove(
+    "alert-success"
+  );
+
+  alertBox.classList.add(
+    "alert-danger"
+  );
+
+  alertBox.textContent = msg;
 }
 
 form.addEventListener("submit", async (e) => {
@@ -47,4 +55,4 @@ form.addEventListener("submit", async (e) => {
     submit.disabled = false;
     submit.textContent = "Criar conta";
   }
-});
+);

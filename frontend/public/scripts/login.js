@@ -7,8 +7,24 @@ if (Auth.isLoggedIn()) window.location.href = CONFIG.SITE_ROOT + "index.html";
 
 function showError(msg) {
   const div = document.createElement("div");
-  div.className = "alert alert-danger";
-  div.textContent = msg; // textContent: nunca interpreta HTML vindo do servidor
+
+  div.className =
+    "alert alert-danger";
+
+  div.textContent = msg;
+
+  alertBox.replaceChildren(div);
+}
+
+
+function showSuccess(msg) {
+  const div = document.createElement("div");
+
+  div.className =
+    "alert alert-success";
+
+  div.textContent = msg;
+
   alertBox.replaceChildren(div);
 }
 
@@ -50,4 +66,4 @@ form.addEventListener("submit", async (e) => {
     submit.disabled = false;
     submit.textContent = "Entrar";
   }
-});
+);
