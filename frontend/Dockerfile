@@ -1,11 +1,5 @@
-FROM php:8.3-cli
+FROM httpd:2.4-alpine
 
-WORKDIR /app
-
-COPY public/ public/
-COPY config/ config/
-
+COPY ./public/ /usr/local/apache2/htdocs/
 
 EXPOSE 80
-
-CMD ["php", "-S", "0.0.0.0:80", "-t", "public", "public/index.php"]

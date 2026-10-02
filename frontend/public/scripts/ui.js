@@ -19,31 +19,13 @@ const UI = {
   },
   // erros 422: mostra a mensagem embaixo de cada campo do formulário
   fieldErrors(form, err) {
-    form.querySelectorAll(".invalid-feedback")
-      .forEach((element) => element.remove());
-
-    form.querySelectorAll(".is-invalid")
-      .forEach((element) => element.classList.remove("is-invalid"));
-
-    const fields = err.data?.fields ?? err.data?.errors ?? {};
-
-    Object.entries(fields).forEach(([field, messages]) => {
+    form.querySelectorAll(".invalid-feedback").forEach((e) => e.remove());
+    form.querySelectorAll(".is-invalid").forEach((e) => e.classList.remove("is-invalid"));
+    Object.entries(err.data?.errors || {}).forEach(([field, msgs]) => {
       const input = form.querySelector(`[name="${field}"]`);
-
-      if (!input) {
-        return;
-      }
-
-      const message = Array.isArray(messages)
-        ? messages[0]
-        : messages;
-
+      if (!input) return;
       input.classList.add("is-invalid");
-
-      input.insertAdjacentHTML(
-        "afterend",
-        `<div class="invalid-feedback">${message}</div>`
-      );
+      input.insertAdjacentHTML("afterend", `<div class="invalid-feedback">${msgs[0]}</div>`);
     });
   },
 };
