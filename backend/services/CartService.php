@@ -3,6 +3,10 @@
 require_once __DIR__ . '/../models/Cart.php';
 require_once __DIR__ . '/../models/Product.php';
 
+class CartMergeException extends RuntimeException
+{
+}
+
 class CartService
 {
     private Cart $cartModel;
@@ -38,9 +42,101 @@ class CartService
         ];
     }
 
-    public function getCart(?string $guestToken): array
+    private function getOrCreateUserCart(int $userId): array
     {
-        $cart = $this->getOrCreateGuestCart($guestToken);
+        $cart = $this->cartModel->findActiveByUserId($userId);
+        if ($cart) {
+            return $cart;
+        }
+
+        $cartId = $this->cartModel->createUserCart($userId);
+        return [
+            'id' => $cartId,
+            'user_id' => $userId,
+            'guest_token' => null,
+            'status' => 'active'
+        ];
+    }
+
+    /**
+     * Merge must be called inside the caller's transaction so authentication
+     * token creation and cart changes commit or roll back together.
+     */
+    public function mergeGuestCart(int $userId, string $guestToken): void
+    {
+        $guestCart = $this->cartModel->findActiveGuestByToken($guestToken);
+        if (!$guestCart) {
+            throw new CartMergeException('O carrinho de visitante não está mais disponível. Atualize o carrinho e tente novamente.');
+        }
+
+        $userCart = $this->cartModel->findActiveByUserId($userId, true);
+        $guestItems = $this->cartModel->findItemsForMerge((int) $guestCart['id']);
+
+        if (!$userCart) {
+            $stocks = $this->cartModel->getProductStocks(array_column($guestItems, 'product_id'));
+            $conflicts = [];
+            foreach ($guestItems as $item) {
+                $productId = (int) $item['product_id'];
+                $stock = $stocks[$productId]['stock'] ?? 0;
+                if (!isset($stocks[$productId]) || !$stocks[$productId]['is_active'] || (int) $item['quantity'] > $stock) {
+                    $conflicts[] = "produto {$productId}: solicitado {$item['quantity']}, estoque {$stock}";
+                }
+            }
+            if ($conflicts !== []) {
+                throw new CartMergeException('Não foi possível mesclar o carrinho por conflito de estoque: ' . implode('; ', $conflicts));
+            }
+
+            $this->cartModel->assignGuestCartToUser((int) $guestCart['id'], $userId);
+            return;
+        }
+
+        $userItems = $this->cartModel->findItemsForMerge((int) $userCart['id']);
+        $guestByProduct = [];
+        $userByProduct = [];
+        foreach ($guestItems as $item) {
+            $guestByProduct[(int) $item['product_id']] = $item;
+        }
+        foreach ($userItems as $item) {
+            $userByProduct[(int) $item['product_id']] = $item;
+        }
+
+        $productIds = array_values(array_unique(array_merge(array_keys($guestByProduct), array_keys($userByProduct))));
+        $stocks = $this->cartModel->getProductStocks($productIds);
+        $conflicts = [];
+        foreach ($productIds as $productId) {
+            $quantity = (int) ($guestByProduct[$productId]['quantity'] ?? 0)
+                + (int) ($userByProduct[$productId]['quantity'] ?? 0);
+            $stock = $stocks[$productId]['stock'] ?? 0;
+            if (!isset($stocks[$productId]) || !$stocks[$productId]['is_active'] || $quantity > $stock) {
+                $conflicts[] = "produto {$productId}: solicitado {$quantity}, estoque {$stock}";
+            }
+        }
+        if ($conflicts !== []) {
+            throw new CartMergeException('Não foi possível mesclar o carrinho por conflito de estoque: ' . implode('; ', $conflicts));
+        }
+
+        foreach ($guestByProduct as $productId => $item) {
+            $guestQuantity = (int) $item['quantity'];
+            if (isset($userByProduct[$productId])) {
+                $this->cartModel->updateCartItemQuantity(
+                    (int) $userCart['id'],
+                    (int) $productId,
+                    (int) $userByProduct[$productId]['quantity'] + $guestQuantity
+                );
+            } else {
+                $this->cartModel->moveCartItem((int) $userCart['id'], (int) $productId, $guestQuantity);
+            }
+        }
+
+        $this->cartModel->clearCartItems((int) $guestCart['id']);
+        $this->cartModel->invalidateGuestCart((int) $guestCart['id']);
+    }
+
+    public function getCart(?string $guestToken, ?int $userId = null): array
+    {
+        $cart = $userId !== null
+            ? $this->getOrCreateUserCart($userId)
+            : $this->getOrCreateGuestCart($guestToken);
 
         $items = $this->cartModel->findItems((int) $cart['id']);
 
@@ -71,7 +167,8 @@ class CartService
     public function addItem(
         ?string $guestToken,
         int $productId,
-        int $quantity
+        int $quantity,
+        ?int $userId = null
     ): array {
         if ($productId <= 0) {
             throw new InvalidArgumentException(
@@ -102,7 +199,9 @@ class CartService
             );
         }
 
-        $cart = $this->getOrCreateGuestCart($guestToken);
+        $cart = $userId !== null
+            ? $this->getOrCreateUserCart($userId)
+            : $this->getOrCreateGuestCart($guestToken);
 
         $existingItem = $this->cartModel->findItem(
             (int) $cart['id'],
@@ -137,15 +236,14 @@ class CartService
             );
         }
 
-        return $this->getCart(
-            $cart['guest_token']
-        );
+        return $this->getCart($cart['guest_token'], $userId);
     }
 
     public function updateItem(
         ?string $guestToken,
         int $itemId,
-        int $quantity
+        int $quantity,
+        ?int $userId = null
     ): array {
         if ($itemId <= 0) {
             throw new InvalidArgumentException(
@@ -159,7 +257,9 @@ class CartService
             );
         }
 
-        $cart = $this->getOrCreateGuestCart($guestToken);
+        $cart = $userId !== null
+            ? $this->getOrCreateUserCart($userId)
+            : $this->getOrCreateGuestCart($guestToken);
 
         $item = $this->cartModel->findItemById(
             (int) $cart['id'],
@@ -194,14 +294,13 @@ class CartService
             $quantity
         );
 
-        return $this->getCart(
-            $cart['guest_token']
-        );
+        return $this->getCart($cart['guest_token'], $userId);
     }
 
     public function removeItem(
         ?string $guestToken,
-        int $itemId
+        int $itemId,
+        ?int $userId = null
     ): array {
         if ($itemId <= 0) {
             throw new InvalidArgumentException(
@@ -209,7 +308,9 @@ class CartService
             );
         }
 
-        $cart = $this->getOrCreateGuestCart($guestToken);
+        $cart = $userId !== null
+            ? $this->getOrCreateUserCart($userId)
+            : $this->getOrCreateGuestCart($guestToken);
 
         $item = $this->cartModel->findItemById(
             (int) $cart['id'],
@@ -227,8 +328,6 @@ class CartService
             $itemId
         );
 
-        return $this->getCart(
-            $cart['guest_token']
-        );
+        return $this->getCart($cart['guest_token'], $userId);
     }
 }

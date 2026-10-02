@@ -33,6 +33,98 @@ class Cart
         return $stmt->fetch();
     }
 
+    public function findActiveByUserId(int $userId, bool $forUpdate = false): array|false
+    {
+        $sql = "
+            SELECT id, user_id, guest_token, status
+            FROM carts
+            WHERE user_id = :user_id AND status = 'active'
+            LIMIT 1
+        ";
+
+        if ($forUpdate) {
+            $sql .= ' FOR UPDATE';
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+
+        return $stmt->fetch();
+    }
+
+    public function findActiveGuestByToken(string $guestToken): array|false
+    {
+        $stmt = $this->db->prepare("
+            SELECT id, user_id, guest_token, status
+            FROM carts
+            WHERE guest_token = :guest_token AND user_id IS NULL AND status = 'active'
+            LIMIT 1
+            FOR UPDATE
+        ");
+        $stmt->execute(['guest_token' => $guestToken]);
+
+        return $stmt->fetch();
+    }
+
+    public function findItemsForMerge(int $cartId): array
+    {
+        $stmt = $this->db->prepare('SELECT id, product_id, quantity FROM cart_items WHERE cart_id = :cart_id ORDER BY product_id FOR UPDATE');
+        $stmt->execute(['cart_id' => $cartId]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function getProductStocks(array $productIds): array
+    {
+        if ($productIds === []) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $stmt = $this->db->prepare("SELECT id, stock, is_active FROM products WHERE id IN ({$placeholders}) ORDER BY id FOR UPDATE");
+        $stmt->execute($productIds);
+
+        $stocks = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $stocks[(int) $row['id']] = [
+                'stock' => (int) $row['stock'],
+                'is_active' => (bool) $row['is_active']
+            ];
+        }
+
+        return $stocks;
+    }
+
+    public function assignGuestCartToUser(int $cartId, int $userId): void
+    {
+        $stmt = $this->db->prepare("UPDATE carts SET user_id = :user_id, guest_token = NULL, status = 'active' WHERE id = :id");
+        $stmt->execute(['user_id' => $userId, 'id' => $cartId]);
+    }
+
+    public function updateCartItemQuantity(int $cartId, int $productId, int $quantity): void
+    {
+        $stmt = $this->db->prepare('UPDATE cart_items SET quantity = :quantity WHERE cart_id = :cart_id AND product_id = :product_id');
+        $stmt->execute(['quantity' => $quantity, 'cart_id' => $cartId, 'product_id' => $productId]);
+    }
+
+    public function moveCartItem(int $cartId, int $productId, int $quantity): void
+    {
+        $stmt = $this->db->prepare('INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (:cart_id, :product_id, :quantity)');
+        $stmt->execute(['cart_id' => $cartId, 'product_id' => $productId, 'quantity' => $quantity]);
+    }
+
+    public function clearCartItems(int $cartId): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM cart_items WHERE cart_id = :cart_id');
+        $stmt->execute(['cart_id' => $cartId]);
+    }
+
+    public function invalidateGuestCart(int $cartId): void
+    {
+        $stmt = $this->db->prepare("UPDATE carts SET guest_token = NULL, status = 'converted' WHERE id = :id");
+        $stmt->execute(['id' => $cartId]);
+    }
+
     public function createGuestCart(string $guestToken): int
     {
         $sql = "
@@ -50,6 +142,14 @@ class Cart
         $stmt->execute([
             'guest_token' => $guestToken
         ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function createUserCart(int $userId): int
+    {
+        $stmt = $this->db->prepare("INSERT INTO carts (user_id, status) VALUES (:user_id, 'active')");
+        $stmt->execute(['user_id' => $userId]);
 
         return (int) $this->db->lastInsertId();
     }

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../services/CartService.php';
+require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
 class CartController
 {
@@ -21,12 +22,23 @@ class CartController
         self::$service = $service;
     }
 
+    private static function authenticatedUserId(): ?int
+    {
+        if (AuthMiddleware::getToken() === null) {
+            return null;
+        }
+
+        $user = AuthMiddleware::requireAuth();
+        return (int) $user['id'];
+    }
+
     public static function index(): never
     {
         try {
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
+            $userId = self::authenticatedUserId();
 
-            $cart = self::getService()->getCart($guestToken);
+            $cart = self::getService()->getCart($guestToken, $userId);
 
             $token = $cart['guest_token'] ?? null;
 
@@ -47,6 +59,7 @@ class CartController
     {
         try {
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
+            $userId = self::authenticatedUserId();
 
             $input = json_decode(
                 file_get_contents('php://input'),
@@ -59,7 +72,8 @@ class CartController
             $cart = self::getService()->addItem(
                 $guestToken,
                 $productId,
-                $quantity
+                $quantity,
+                $userId
             );
 
             $token = $cart['guest_token'] ?? null;
@@ -91,6 +105,7 @@ class CartController
     {
         try {
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
+            $userId = self::authenticatedUserId();
 
             $input = json_decode(
                 file_get_contents('php://input'),
@@ -102,7 +117,8 @@ class CartController
             $cart = self::getService()->updateItem(
                 $guestToken,
                 $id,
-                $quantity
+                $quantity,
+                $userId
             );
 
             $token = $cart['guest_token'] ?? null;
@@ -133,10 +149,12 @@ class CartController
     {
         try {
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
+            $userId = self::authenticatedUserId();
 
             $cart = self::getService()->removeItem(
                 $guestToken,
-                $id
+                $id,
+                $userId
             );
 
             $token = $cart['guest_token'] ?? null;
