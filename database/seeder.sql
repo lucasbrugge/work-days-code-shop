@@ -66,8 +66,10 @@ INSERT INTO seed_products (category_slug, name, description, price, stock, is_ac
     ('cassete', 'Gal Costa - Índia (Cassete)', 'Música brasileira em edição de fita cassete.', 49.90, 5, TRUE);
 
 UPDATE products p
-INNER JOIN seed_products s ON p.name = s.name
-INNER JOIN categories c ON c.slug = s.category_slug
+INNER JOIN seed_products s
+    ON p.name COLLATE utf8mb4_unicode_ci = s.name COLLATE utf8mb4_unicode_ci
+INNER JOIN categories c
+    ON c.slug COLLATE utf8mb4_unicode_ci = s.category_slug COLLATE utf8mb4_unicode_ci
 SET p.category_id = c.id,
     p.description = s.description,
     p.price = s.price,
@@ -77,9 +79,11 @@ SET p.category_id = c.id,
 INSERT INTO products (category_id, name, description, price, stock, is_active)
 SELECT c.id, s.name, s.description, s.price, s.stock, s.is_active
 FROM seed_products s
-INNER JOIN categories c ON c.slug = s.category_slug
+INNER JOIN categories c
+    ON c.slug COLLATE utf8mb4_unicode_ci = s.category_slug COLLATE utf8mb4_unicode_ci
 WHERE NOT EXISTS (
-    SELECT 1 FROM products p WHERE p.name = s.name
+    SELECT 1 FROM products p
+    WHERE p.name COLLATE utf8mb4_unicode_ci = s.name COLLATE utf8mb4_unicode_ci
 );
 
 DROP TEMPORARY TABLE seed_products;
