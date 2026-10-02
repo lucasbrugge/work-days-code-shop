@@ -335,14 +335,16 @@ class Product
     public function decrementStock(int $id, int $quantity): bool
     {
         $sql = "
-            UPDATE products
-            SET stock = stock - :quantity
-            WHERE id = :id AND stock >= :quantity
-        ";
+        UPDATE products
+        SET stock = stock - :quantity_set
+        WHERE id = :id AND stock >= :quantity_where
+    ";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'id' => $id,
-            'quantity' => $quantity
+            'quantity_set' => $quantity,
+            'quantity_where' => $quantity
         ]);
 
         return $stmt->rowCount() > 0;
