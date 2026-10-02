@@ -99,4 +99,47 @@ class User
 
         return (int) $this->db->lastInsertId();
     }
+
+    public function emailExistsForOtherUser(
+        string $email,
+        int $userId
+    ): bool {
+        $sql = "
+            SELECT COUNT(*)
+            FROM users
+            WHERE email = :email
+            AND id != :user_id
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            'email' => $email,
+            'user_id' => $userId
+        ]);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function updateProfile(
+        int $userId,
+        string $name,
+        string $email
+    ): bool {
+        $sql = "
+            UPDATE users
+            SET
+                name = :name,
+                email = :email
+            WHERE id = :id
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'id' => $userId
+        ]);
+    }
 }
