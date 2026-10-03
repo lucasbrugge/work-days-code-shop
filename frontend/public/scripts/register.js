@@ -152,6 +152,8 @@ form.addEventListener(
         data.user
       );
 
+      CartToken.clear();
+
 
       window.location.href =
         CONFIG.SITE_ROOT +

@@ -58,6 +58,24 @@ form.addEventListener("submit", async (e) => {
 
     const data = await api("/auth/login", { method: "POST", body });
     Auth.save(data.token, data.user);
+    CartToken.clear();
+
+    if (
+      data.cart_merge_warnings?.length
+    ) {
+
+      showWarning(
+        data.cart_merge_warnings
+      );
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            2000
+          )
+      );
+    }
 
     window.location.href = safeNext() || CONFIG.SITE_ROOT + "index.html";
   } catch (err) {

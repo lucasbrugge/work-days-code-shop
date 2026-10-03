@@ -102,10 +102,12 @@ class AuthService
             time() + (60 * 60 * 24)
         );
 
+        $mergeWarnings = [];
+
         $this->db->beginTransaction();
         try {
             if ($guestToken !== null && $guestToken !== '') {
-                $this->cartService->mergeGuestCart((int) $user['id'], $guestToken);
+                $mergeWarnings = $this->cartService ->mergeGuestCart((int) $user['id'],$guestToken);
             }
 
             $stmt = $this->db->prepare("
@@ -137,7 +139,8 @@ class AuthService
                 'name' => $user['name'],
                 'email' => $user['email'],
                 'role' => $user['role']
-            ]
+            ],
+            'cart_merge_warnings' => $mergeWarnings,
         ];
     }
 
