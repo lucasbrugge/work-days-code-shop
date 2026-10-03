@@ -47,7 +47,13 @@ class CartService
 
     private function getOrCreateUserCart(int $userId): array
     {
-        $cart = $this->cartModel->findActiveByUserId($userId, $this->db->inTransaction());
+        if (!$this->db->inTransaction()) {
+            throw new LogicException('A criação do carrinho autenticado exige uma transação.');
+        }
+
+        // Serializa criações simultâneas mesmo quando ainda não existe carrinho para bloquear.
+        $this->cartModel->lockUser($userId);
+        $cart = $this->cartModel->findActiveByUserId($userId, true);
         if ($cart) {
             return $cart;
         }
@@ -66,7 +72,14 @@ class CartService
         string $guestToken
     ): array {
 
+        if (!$this->db->inTransaction()) {
+            throw new LogicException('A fusão do carrinho exige uma transação ativa.');
+        }
+
         $warnings = [];
+
+        // A linha do usuário serializa fusões concorrentes quando seu carrinho ainda não existe.
+        $this->cartModel->lockUser($userId);
 
         $guestCart =
             $this->cartModel
@@ -112,56 +125,29 @@ class CartService
                         $productIds
                     );
 
+            foreach ($guestItems as $item) {
+                $productId = (int) $item['product_id'];
+                $quantity = (int) $item['quantity'];
+                $product = $stocks[$productId] ?? null;
 
-            foreach (
-                $guestItems as $item
-            ) {
-
-                $productId =
-                    (int) $item['product_id'];
-
-                $quantity =
-                    (int) $item['quantity'];
-
-                $product =
-                    $stocks[$productId]
-                    ?? null;
-
-                if (
-                    !$product ||
-                    !$product['is_active'] ||
-                    (int) $product['stock'] <= 0
-                ) {
-
-                    $this->cartModel
-                        ->deleteItem(
-                            (int) $guestCart['id'],
-                            (int) $item['id']
-                        );
-
-                    $warnings[] =
-                        "Produto {$productId} indisponível e removido do carrinho.";
-
+                if (!$product) {
+                    $warnings[] = "Produto {$productId} não foi encontrado; revise o carrinho após o login.";
                     continue;
                 }
 
+                $stock = (int) $product['stock'];
+                $finalQuantity = min($quantity, $stock);
+                if ($finalQuantity !== $quantity) {
+                    $this->cartModel->updateCartItemQuantity(
+                        (int) $guestCart['id'],
+                        $productId,
+                        $finalQuantity
+                    );
+                    $warnings[] = "Produto {$productId}: quantidade ajustada de {$quantity} para {$finalQuantity} por limite de estoque.";
+                }
 
-                $stock =
-                    (int) $product['stock'];
-
-                if (
-                    $quantity > $stock
-                ) {
-
-                    $this->cartModel
-                        ->updateCartItemQuantity(
-                            (int) $guestCart['id'],
-                            $productId,
-                            $stock
-                        );
-
-                    $warnings[] =
-                        "Produto {$productId}: quantidade ajustada de {$quantity} para {$stock} por limite de estoque.";
+                if (!$product['is_active'] || $stock <= 0) {
+                    $warnings[] = "Produto {$productId} está indisponível e foi mantido no carrinho para remoção ou revisão.";
                 }
             }
 
@@ -226,6 +212,27 @@ class CartService
                     $productIds
                 );
 
+        foreach ($userByProduct as $productId => &$userItem) {
+            $product = $stocks[$productId] ?? null;
+            if (!$product) {
+                continue;
+            }
+
+            $quantity = (int) $userItem['quantity'];
+            $stock = (int) $product['stock'];
+            $finalQuantity = min($quantity, $stock);
+            if ($finalQuantity !== $quantity) {
+                $this->cartModel->updateCartItemQuantity(
+                    (int) $userCart['id'],
+                    (int) $productId,
+                    $finalQuantity
+                );
+                $userItem['quantity'] = $finalQuantity;
+                $warnings[] = "Produto {$productId}: quantidade do carrinho da conta ajustada de {$quantity} para {$finalQuantity} por limite de estoque.";
+            }
+        }
+        unset($userItem);
+
         foreach (
             $guestByProduct
             as $productId => $item
@@ -257,7 +264,7 @@ class CartService
             ) {
 
                 $warnings[] =
-                    "Produto {$productId} não pôde ser adicionado porque está indisponível.";
+                    "Produto {$productId} está indisponível; a quantidade visitante não foi incorporada e o item foi removido do carrinho visitante.";
 
                 continue;
             }
@@ -274,11 +281,10 @@ class CartService
                 $userQuantity > $stock
             ) {
 
-                $finalQuantity =
-                    $userQuantity;
+                $finalQuantity = $stock;
 
                 $warnings[] =
-                    "Produto {$productId}: nenhuma quantidade adicional foi incluída porque o carrinho já atingiu o limite de estoque.";
+                    "Produto {$productId}: quantidade ajustada de {$userQuantity} para {$stock} porque o carrinho já excedia o estoque.";
 
             } else {
 
@@ -348,34 +354,53 @@ class CartService
     }
     public function getCart(?string $guestToken, ?int $userId = null): array
     {
-        $cart = $userId !== null
-            ? $this->getOrCreateUserCart($userId)
-            : $this->getOrCreateGuestCart($guestToken);
-
-        $items = $this->cartModel->findItems((int) $cart['id']);
-
-        $total = 0;
-        $totalItems = 0;
-
-        foreach ($items as &$item) {
-            $item['id'] = (int) $item['id'];
-            $item['product_id'] = (int) $item['product_id'];
-            $item['quantity'] = (int) $item['quantity'];
-            $item['price'] = (float) $item['price'];
-            $item['subtotal'] = (float) $item['subtotal'];
-            $item['stock'] = (int) $item['stock'];
-
-            $total += $item['subtotal'];
-            $totalItems += $item['quantity'];
+        $ownsTransaction = $userId !== null && !$this->db->inTransaction();
+        if ($ownsTransaction) {
+            $this->db->beginTransaction();
         }
 
-        return [
-            'id' => (int) $cart['id'],
-            'items' => $items,
-            'total_items' => $totalItems,
-            'total' => round($total, 2),
-            'guest_token' => $cart['guest_token']
-        ];
+        try {
+            $cart = $userId !== null
+                ? $this->getOrCreateUserCart($userId)
+                : $this->getOrCreateGuestCart($guestToken);
+
+            $items = $this->cartModel->findItems((int) $cart['id']);
+
+            $total = 0;
+            $totalItems = 0;
+
+            foreach ($items as &$item) {
+                $item['id'] = (int) $item['id'];
+                $item['product_id'] = (int) $item['product_id'];
+                $item['quantity'] = (int) $item['quantity'];
+                $item['price'] = (float) $item['price'];
+                $item['subtotal'] = (float) $item['subtotal'];
+                $item['stock'] = (int) $item['stock'];
+                $item['is_active'] = (bool) $item['is_active'];
+
+                $total += $item['subtotal'];
+                $totalItems += $item['quantity'];
+            }
+            unset($item);
+
+            $result = [
+                'id' => (int) $cart['id'],
+                'items' => $items,
+                'total_items' => $totalItems,
+                'total' => round($total, 2),
+                'guest_token' => $cart['guest_token']
+            ];
+
+            if ($ownsTransaction) {
+                $this->db->commit();
+            }
+            return $result;
+        } catch (Throwable $e) {
+            if ($ownsTransaction) {
+                $this->rollBackIfNeeded();
+            }
+            throw $e;
+        }
     }
 
     public function addItem(

@@ -72,10 +72,17 @@ CREATE TABLE carts (
     status ENUM('active', 'converted', 'abandoned')
         NOT NULL DEFAULT 'active',
 
+    active_user_id INT UNSIGNED
+        GENERATED ALWAYS AS (
+            CASE WHEN status = 'active' THEN user_id ELSE NULL END
+        ) STORED,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_active_user_cart (active_user_id),
 
     CONSTRAINT fk_carts_user
         FOREIGN KEY (user_id)

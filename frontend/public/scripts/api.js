@@ -132,7 +132,34 @@ const CartToken = {
 |
 */
 
-async function request(
+let guestCartInitialization = null;
+
+async function request(path, options = {}) {
+  const cartRequest = path === "/cart" || path.startsWith("/cart/");
+
+  if (!cartRequest || Auth.getToken() || CartToken.get()) {
+    return performRequest(path, options);
+  }
+
+  if (guestCartInitialization) {
+    await guestCartInitialization;
+    return request(path, options);
+  }
+
+  let releaseInitialization;
+  guestCartInitialization = new Promise((resolve) => {
+    releaseInitialization = resolve;
+  });
+
+  try {
+    return await performRequest(path, options);
+  } finally {
+    guestCartInitialization = null;
+    releaseInitialization();
+  }
+}
+
+async function performRequest(
   path,
   {
     method = "GET",
