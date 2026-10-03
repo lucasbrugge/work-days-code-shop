@@ -154,11 +154,6 @@ form.addEventListener(
 
       CartToken.clear();
 
-      if (data.cart_merge_warnings?.length) {
-        showMergeWarnings(data.cart_merge_warnings);
-        return;
-      }
-
 
       window.location.href =
         CONFIG.SITE_ROOT +
@@ -210,24 +205,3 @@ form.addEventListener(
 
   }
 );
-
-function showMergeWarnings(messages) {
-  alertBox.classList.remove("d-none", "alert-danger");
-  alertBox.classList.add("alert-warning");
-  alertBox.replaceChildren();
-
-  const title = document.createElement("p");
-  title.className = "mb-2";
-  title.textContent = "O carrinho foi atualizado com estes avisos:";
-  const list = document.createElement("ul");
-  for (const message of messages) {
-    const item = document.createElement("li");
-    item.textContent = message;
-    list.append(item);
-  }
-  const continueLink = document.createElement("a");
-  continueLink.className = "btn btn-warning btn-sm";
-  continueLink.href = CONFIG.SITE_ROOT + "index.html";
-  continueLink.textContent = "Continuar";
-  alertBox.append(title, list, continueLink);
-}
