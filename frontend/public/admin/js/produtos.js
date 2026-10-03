@@ -39,6 +39,9 @@ const productsEmpty =
         "productsEmpty"
     );
 
+const productsListSummary =
+    document.getElementById("productsListSummary");
+
 
 const productMessage =
     document.getElementById(
@@ -239,6 +242,11 @@ function renderProducts() {
     const filteredProducts =
         getFilteredProducts();
 
+    if (productsListSummary) {
+        productsListSummary.textContent =
+            `Exibindo ${filteredProducts.length} de ${products.length} produto(s).`;
+    }
+
 
     if (!filteredProducts.length) {
 
@@ -435,12 +443,14 @@ async function loadProducts() {
 
     try {
 
-        const result =
-            await getProdutos();
+        const firstPage = await getProdutos(1, 100);
+        products = Array.isArray(firstPage.data) ? firstPage.data : [];
 
-
-        products =
-            result.data || [];
+        const lastPage = Math.max(1, Number(firstPage.meta?.last_page) || 1);
+        for (let page = 2; page <= lastPage; page += 1) {
+            const result = await getProdutos(page, 100);
+            if (Array.isArray(result.data)) products.push(...result.data);
+        }
 
 
         renderProducts();
