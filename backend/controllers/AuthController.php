@@ -23,15 +23,31 @@ class AuthController
         try {
             $data = getJsonBody();
 
+            $errors = AuthValidator::validateRegister($data);
+            if ($errors !== []) {
+                jsonResponse(
+                    [
+                        'message' => 'Dados inválidos.',
+                        'fields' => $errors
+                    ],
+                    422
+                );
+            }
+
+            $data['name'] = trim($data['name']);
+            $data['email'] = AuthValidator::normalizeEmail($data['email']);
+
             $user = self::getService()->register($data);
 
             jsonResponse($user, 201);
-        } catch (RuntimeException $e) {
+        } catch (EmailAlreadyExistsException $e) {
             jsonResponse($e->getMessage(), 409);
         } catch (InvalidArgumentException $e) {
             jsonResponse($e->getMessage(), 422);
+        } catch (PDOException $e) {
+            jsonResponse('Erro ao cadastrar usuário.', 500);
         } catch (Throwable $e) {
-            jsonResponse('Erro ao cadastrar usuário', 500);
+            jsonResponse('Erro ao cadastrar usuário.', 500);
         }
     }
 
@@ -52,8 +68,10 @@ class AuthController
                 );
             }
 
+            $email = AuthValidator::normalizeEmail($data['email']);
+
             $result = self::getService()->login(
-                $data['email'],
+                $email,
                 $data['password'],
                 $_SERVER['HTTP_X_GUEST_TOKEN'] ?? ($data['guest_token'] ?? null)
             );
@@ -99,19 +117,23 @@ class AuthController
 
     public static function logout(): never
     {
-        $token = AuthMiddleware::getToken();
+        try {
+            $token = AuthMiddleware::getToken();
 
-        if ($token === null) {
-            jsonResponse(
-                'Token de autenticação obrigatório',
-                401
-            );
+            if ($token === null) {
+                jsonResponse(
+                    'Token de autenticação obrigatório',
+                    401
+                );
+            }
+
+            self::getService()->logout($token);
+
+            jsonResponse([
+                'message' => 'Logout realizado com sucesso'
+            ]);
+        } catch (Throwable $e) {
+            jsonResponse('Erro ao realizar logout.', 500);
         }
-
-        self::getService()->logout($token);
-
-        jsonResponse([
-            'message' => 'Logout realizado com sucesso'
-        ]);
     }
 }

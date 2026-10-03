@@ -168,6 +168,20 @@ function assertTrue(
 }
 
 
+function assertFieldError(
+    string $test,
+    string $field,
+    array $response
+): void {
+    $fields = $response['json']['error']['fields'] ?? [];
+
+    assertTrue(
+        $test,
+        $response['status'] === 422 && array_key_exists($field, $fields)
+    );
+}
+
+
 /*
 |--------------------------------------------------------------------------
 | Início
@@ -190,7 +204,7 @@ echo PHP_EOL;
 */
 
 $unique =
-    time();
+    bin2hex(random_bytes(8));
 
 $email =
     "teste.{$unique}@workdays.com";
@@ -214,13 +228,16 @@ $register =
                 'Usuário Teste',
 
             'email' =>
-                $email,
+                strtoupper($email),
 
             'password' =>
                 $password,
 
             'password_confirmation' =>
-                $password
+                $password,
+
+            'role' =>
+                'admin'
         ]
     );
 
@@ -229,6 +246,97 @@ assertStatus(
     201,
     $register
 );
+
+assertTrue(
+    'Cadastro normaliza o e-mail',
+    ($register['json']['data']['email'] ?? null) === $email
+);
+
+assertTrue(
+    'Cadastro não permite definir papel administrativo',
+    ($register['json']['data']['role'] ?? null) === 'customer'
+);
+
+assertTrue(
+    'Cadastro não retorna hash de senha',
+    !array_key_exists('password_hash', $register['json']['data'] ?? [])
+);
+
+$invalidRegistrationCases = [
+    [
+        'Cadastro rejeita nome curto',
+        'name',
+        ['name' => 'Ab']
+    ],
+    [
+        'Cadastro rejeita nome acima do limite do schema',
+        'name',
+        ['name' => str_repeat('N', 101)]
+    ],
+    [
+        'Cadastro rejeita e-mail inválido',
+        'email',
+        ['email' => 'email-invalido']
+    ],
+    [
+        'Cadastro rejeita e-mail acima do limite do schema',
+        'email',
+        ['email' => str_repeat('a', 64) . '@' . str_repeat('b', 63) . '.' . str_repeat('c', 63) . '.com']
+    ],
+    [
+        'Cadastro rejeita senha com menos de 8 caracteres',
+        'password',
+        ['password' => 'Ab123!x', 'password_confirmation' => 'Ab123!x']
+    ],
+    [
+        'Cadastro exige confirmação da senha',
+        'password_confirmation',
+        ['password_confirmation' => null]
+    ],
+    [
+        'Cadastro rejeita confirmação divergente',
+        'password_confirmation',
+        ['password_confirmation' => 'OutraSenha123!']
+    ],
+    [
+        'Cadastro rejeita tipo inválido para nome',
+        'name',
+        ['name' => ['nome']]
+    ]
+];
+
+foreach ($invalidRegistrationCases as [$testName, $field, $overrides]) {
+    $body = array_replace(
+        [
+            'name' => 'Usuário Inválido',
+            'email' => "invalido.{$unique}@workdays.com",
+            'password' => $password,
+            'password_confirmation' => $password
+        ],
+        $overrides
+    );
+
+    $invalidResponse = request(
+        'POST',
+        "{$baseUrl}/auth/register",
+        $body
+    );
+
+    assertFieldError($testName, $field, $invalidResponse);
+}
+
+$loginWithoutEmail = request(
+    'POST',
+    "{$baseUrl}/auth/login",
+    ['email' => ['nao-e-texto'], 'password' => $password]
+);
+assertFieldError('Login rejeita tipo inválido para e-mail', 'email', $loginWithoutEmail);
+
+$logoutWithoutToken = request(
+    'POST',
+    "{$baseUrl}/auth/logout"
+);
+assertStatus('Logout sem token retorna 401', 401, $logoutWithoutToken);
 
 
 /*
@@ -246,7 +354,7 @@ $duplicate =
                 'Usuário Duplicado',
 
             'email' =>
-                $email,
+                "  " . strtoupper($email) . "  ",
 
             'password' =>
                 $password,
@@ -275,7 +383,7 @@ $wrongPassword =
         "{$baseUrl}/auth/login",
         [
             'email' =>
-                $email,
+                "  " . strtoupper($email) . "  ",
 
             'password' =>
                 'senha-errada'
@@ -370,6 +478,31 @@ assertTrue(
         ?? null
     ) === $email
 );
+
+require_once __DIR__ . '/../config/database.php';
+$expiredLogin = request(
+    'POST',
+    "{$baseUrl}/auth/login",
+    ['email' => $email, 'password' => $password]
+);
+$expiredToken = $expiredLogin['json']['data']['token'] ?? null;
+assertTrue('Login cria token para testar expiração', !empty($expiredToken));
+
+if ($expiredToken) {
+    $db = Database::getConnection();
+    $expireStatement = $db->prepare(
+        'UPDATE auth_tokens SET expires_at = DATE_SUB(NOW(), INTERVAL 1 MINUTE) WHERE token_hash = :token_hash'
+    );
+    $expireStatement->execute(['token_hash' => hash('sha256', $expiredToken)]);
+
+    $expiredMe = request(
+        'GET',
+        "{$baseUrl}/auth/me",
+        null,
+        $expiredToken
+    );
+    assertStatus('/auth/me rejeita token expirado', 401, $expiredMe);
+}
 
 
 /*
@@ -485,6 +618,14 @@ if ($adminToken) {
         200,
         $adminProducts
     );
+
+    $adminLogout = request(
+        'POST',
+        "{$baseUrl}/auth/logout",
+        null,
+        $adminToken
+    );
+    assertStatus('Admin também consegue encerrar a sessão', 200, $adminLogout);
 }
 
 /*
@@ -573,6 +714,9 @@ assertStatus(
     401,
     $afterLogout
 );
+
+$cleanupUser = $db->prepare('DELETE FROM users WHERE email = :email');
+$cleanupUser->execute(['email' => $email]);
 
 
 /*

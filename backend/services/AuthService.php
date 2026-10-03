@@ -4,6 +4,10 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/CartService.php';
 
+class EmailAlreadyExistsException extends RuntimeException
+{
+}
+
 class AuthService
 {
     private PDO $db;
@@ -19,26 +23,13 @@ class AuthService
 
     public function register(array $data): array
     {
-        $name = trim($data['name'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $password = $data['password'] ?? '';
-
-        if ($name === '') {
-            throw new InvalidArgumentException('Nome é obrigatório');
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException('E-mail inválido');
-        }
-
-        if (strlen($password) < 6) {
-            throw new InvalidArgumentException(
-                'A senha deve ter pelo menos 6 caracteres'
-            );
-        }
+        // O Controller valida os dados pelo AuthValidator antes de chamar este método.
+        $name = trim($data['name']);
+        $email = $data['email'];
+        $password = $data['password'];
 
         if ($this->userModel->emailExists($email)) {
-            throw new RuntimeException('E-mail já cadastrado');
+            throw new EmailAlreadyExistsException('Este e-mail já está cadastrado.');
         }
 
         $passwordHash = password_hash(
@@ -53,11 +44,26 @@ class AuthService
                 (:name, :email, :password_hash, 'customer')
         ");
 
-        $stmt->execute([
-            'name' => $name,
-            'email' => $email,
-            'password_hash' => $passwordHash
-        ]);
+        try {
+            $stmt->execute([
+                'name' => $name,
+                'email' => $email,
+                'password_hash' => $passwordHash
+            ]);
+        } catch (PDOException $e) {
+            $sqlState = (string) ($e->errorInfo[0] ?? $e->getCode());
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+
+            if ($sqlState === '23000' && $driverCode === 1062) {
+                throw new EmailAlreadyExistsException(
+                    'Este e-mail já está cadastrado.',
+                    0,
+                    $e
+                );
+            }
+
+            throw $e;
+        }
 
         $userId = (int) $this->db->lastInsertId();
 
@@ -65,7 +71,7 @@ class AuthService
 
         if ($user === false) {
             throw new RuntimeException(
-                'Usuário criado, mas não foi possível carregá-lo'
+                'Não foi possível carregar o usuário criado.'
             );
         }
 
@@ -78,10 +84,6 @@ class AuthService
         ?string $guestToken = null
     ): array
     {
-        $email = strtolower(
-        trim($email)
-        );
-
         $user = $this->userModel->findByEmail(
             $email
         );
