@@ -1,7 +1,6 @@
 # Environment files
 .env
 .env.*
-!.envExample
 !.env.example
 
 # IDEs and editors

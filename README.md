@@ -2,9 +2,28 @@
 
 E-commerce acadêmico desenvolvido em equipe com PHP puro, MVC simplificado, API REST e MySQL.
 
-MVC simplificado.
+## Estrutura do projeto
 
-regras de commits: https://www.conventionalcommits.org/pt-br/v1.0.0-beta.4/
+- `backend/`: API PHP. Controllers recebem requisições, services concentram as regras de negócio, models acessam o MySQL e routes registram os endpoints.
+- `frontend/public/`: raiz pública servida pelo Apache. `index.html` é a página inicial; `pages/` guarda as telas da loja, `scripts/` os scripts compartilhados e `admin/` concentra o painel administrativo.
+- `database/`: schema e dados locais de demonstração.
+- `docs/`: documentação, planejamento e arquivos de apoio.
+- `scripts/`: comandos auxiliares do projeto, incluindo o teste de autenticação.
+- `compose.yaml`: configuração dos serviços Docker.
+
+Edite as páginas e os recursos do site dentro de `frontend/public/`. O Docker não serve arquivos que fiquem diretamente em `frontend/`.
+
+## Inicialização local
+
+Crie o arquivo de ambiente usado pelo Docker Compose e preencha as credenciais do MySQL:
+
+```bash
+cp .env.example .env
+```
+
+O Compose monta `database/schema.sql` e `database/seeder.sql` na inicialização de um volume MySQL vazio. Consulte a seção abaixo para reaplicar os dados de demonstração em um banco existente.
+
+Regras de commits: https://www.conventionalcommits.org/pt-br/v1.0.0-beta.4/
 
 ## Dados locais de demonstração
 
@@ -33,5 +52,5 @@ Os containers do projeto precisam estar em execução:
 
 ```bash
 docker compose up -d
-
-basta rodar ./scripts/test-auth.sh na raiz do projeto ( work-days-code-shop)
+./scripts/test-auth.sh
+```
