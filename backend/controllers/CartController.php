@@ -43,7 +43,7 @@ class CartController
             $token = $cart['guest_token'] ?? null;
 
             if ($token) {
-                header('X-Cart-Token: ' . $token);
+                header('X-Guest-Token: '.$guestToken);
             }
 
             jsonResponse($cart, 200);
@@ -79,7 +79,7 @@ class CartController
             $token = $cart['guest_token'] ?? null;
 
             if ($token) {
-                header('X-Cart-Token: ' . $token);
+                header('X-Guest-Token: '.$guestToken);
             }
 
             jsonResponse($cart, 201);
@@ -124,7 +124,7 @@ class CartController
             $token = $cart['guest_token'] ?? null;
 
             if ($token) {
-                header('X-Cart-Token: ' . $token);
+                header('X-Guest-Token: '.$guestToken);
             }
 
             jsonResponse($cart, 200);
@@ -160,7 +160,7 @@ class CartController
             $token = $cart['guest_token'] ?? null;
 
             if ($token) {
-                header('X-Cart-Token: ' . $token);
+                header('X-Guest-Token: '.$guestToken);
             }
 
             jsonResponse($cart, 200);
