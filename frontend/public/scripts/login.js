@@ -28,26 +28,6 @@ function showSuccess(msg) {
   alertBox.replaceChildren(div);
 }
 
-function showWarning(messages) {
-  const div = document.createElement("div");
-  const list = document.createElement("ul");
-  div.className = "alert alert-warning";
-  const title = document.createElement("p");
-  title.className = "mb-2";
-  title.textContent = "O carrinho foi atualizado com estes avisos:";
-  for (const message of messages) {
-    const item = document.createElement("li");
-    item.textContent = message;
-    list.append(item);
-  }
-  const continueLink = document.createElement("a");
-  continueLink.className = "btn btn-warning btn-sm";
-  continueLink.href = safeNext() || CONFIG.SITE_ROOT + "index.html";
-  continueLink.textContent = "Continuar";
-  div.append(title, list, continueLink);
-  alertBox.replaceChildren(div);
-}
-
 // ?next=... só é aceito se apontar para dentro do próprio site
 // (evita redirecionar o usuário para um site externo)
 function safeNext() {
@@ -87,7 +67,14 @@ form.addEventListener("submit", async (e) => {
       showWarning(
         data.cart_merge_warnings
       );
-      return;
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            2000
+          )
+      );
     }
 
     window.location.href = safeNext() || CONFIG.SITE_ROOT + "index.html";

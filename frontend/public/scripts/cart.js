@@ -54,9 +54,7 @@
   }
 
   const problemOf = (item) =>
-    !item.is_active
-      ? "Produto indisponível"
-      : item.stock === 0
+    item.stock === 0
       ? "Sem estoque"
       : item.quantity > item.stock
         ? `Só há ${item.stock} em estoque`

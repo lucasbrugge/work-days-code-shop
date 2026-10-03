@@ -64,16 +64,6 @@ class Cart
         return $stmt->fetch();
     }
 
-    public function lockUser(int $userId): void
-    {
-        $stmt = $this->db->prepare('SELECT id FROM users WHERE id = :user_id FOR UPDATE');
-        $stmt->execute(['user_id' => $userId]);
-
-        if ($stmt->fetch() === false) {
-            throw new RuntimeException('Usuário não encontrado.');
-        }
-    }
-
     public function findActiveGuestByToken(string $guestToken): array|false
     {
         $stmt = $this->db->prepare("
@@ -202,7 +192,6 @@ class Cart
                 p.name,
                 p.price,
                 p.stock,
-                p.is_active,
                 p.image_url,
                 (p.price * ci.quantity) AS subtotal
             FROM cart_items ci

@@ -32,29 +32,6 @@ class CartController
         return (int) $user['id'];
     }
 
-    private static function sendGuestToken(array $cart): void
-    {
-        $token = $cart['guest_token'] ?? null;
-        if (is_string($token) && $token !== '') {
-            header('X-Guest-Token: ' . $token);
-        }
-    }
-
-    private static function positiveInteger(mixed $value, string $field): int
-    {
-        if (!is_int($value) || $value <= 0) {
-            throw new InvalidArgumentException("O campo {$field} deve ser um inteiro positivo.");
-        }
-
-        return $value;
-    }
-
-    private static function internalError(string $operation, Throwable $e): never
-    {
-        error_log("{$operation}: {$e}");
-        jsonResponse('Não foi possível concluir a operação do carrinho.', 500);
-    }
-
     public static function index(): never
     {
         try {
@@ -63,11 +40,18 @@ class CartController
 
             $cart = self::getService()->getCart($guestToken, $userId);
 
-            self::sendGuestToken($cart);
+            $token = $cart['guest_token'] ?? null;
+
+            if ($token) {
+                header('X-Guest-Token: '.$guestToken);
+            }
 
             jsonResponse($cart, 200);
         } catch (Throwable $e) {
-            self::internalError('Erro ao carregar carrinho', $e);
+            jsonResponse(
+                'Erro ao carregar carrinho: ' . $e->getMessage(),
+                500
+            );
         }
     }
 
@@ -77,9 +61,13 @@ class CartController
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
             $userId = self::authenticatedUserId();
 
-            $input = getJsonBody();
-            $productId = self::positiveInteger($input['product_id'] ?? null, 'product_id');
-            $quantity = self::positiveInteger($input['quantity'] ?? null, 'quantity');
+            $input = json_decode(
+                file_get_contents('php://input'),
+                true
+            );
+
+            $productId = (int) ($input['product_id'] ?? 0);
+            $quantity = (int) ($input['quantity'] ?? 0);
 
             $cart = self::getService()->addItem(
                 $guestToken,
@@ -88,7 +76,11 @@ class CartController
                 $userId
             );
 
-            self::sendGuestToken($cart);
+            $token = $cart['guest_token'] ?? null;
+
+            if ($token) {
+                header('X-Guest-Token: '.$guestToken);
+            }
 
             jsonResponse($cart, 201);
         } catch (InvalidArgumentException $e) {
@@ -96,15 +88,16 @@ class CartController
                 $e->getMessage(),
                 400
             );
-        } catch (PDOException $e) {
-            self::internalError('Erro PDO ao adicionar produto ao carrinho', $e);
         } catch (RuntimeException $e) {
             jsonResponse(
                 $e->getMessage(),
                 422
             );
         } catch (Throwable $e) {
-            self::internalError('Erro ao adicionar produto ao carrinho', $e);
+            jsonResponse(
+                'Erro ao adicionar produto ao carrinho: ' . $e->getMessage(),
+                500
+            );
         }
     }
 
@@ -114,8 +107,12 @@ class CartController
             $guestToken = $_SERVER['HTTP_X_GUEST_TOKEN'] ?? null;
             $userId = self::authenticatedUserId();
 
-            $input = getJsonBody();
-            $quantity = self::positiveInteger($input['quantity'] ?? null, 'quantity');
+            $input = json_decode(
+                file_get_contents('php://input'),
+                true
+            );
+
+            $quantity = (int) ($input['quantity'] ?? 0);
 
             $cart = self::getService()->updateItem(
                 $guestToken,
@@ -124,7 +121,11 @@ class CartController
                 $userId
             );
 
-            self::sendGuestToken($cart);
+            $token = $cart['guest_token'] ?? null;
+
+            if ($token) {
+                header('X-Guest-Token: '.$guestToken);
+            }
 
             jsonResponse($cart, 200);
         } catch (InvalidArgumentException $e) {
@@ -132,15 +133,16 @@ class CartController
                 $e->getMessage(),
                 400
             );
-        } catch (PDOException $e) {
-            self::internalError('Erro PDO ao atualizar item do carrinho', $e);
         } catch (RuntimeException $e) {
             jsonResponse(
                 $e->getMessage(),
                 422
             );
         } catch (Throwable $e) {
-            self::internalError('Erro ao atualizar item do carrinho', $e);
+            jsonResponse(
+                'Erro ao atualizar item do carrinho: ' . $e->getMessage(),
+                500
+            );
         }
     }
     public static function destroy(int $id): never
@@ -155,7 +157,11 @@ class CartController
                 $userId
             );
 
-            self::sendGuestToken($cart);
+            $token = $cart['guest_token'] ?? null;
+
+            if ($token) {
+                header('X-Guest-Token: '.$guestToken);
+            }
 
             jsonResponse($cart, 200);
         } catch (InvalidArgumentException $e) {
@@ -163,15 +169,16 @@ class CartController
                 $e->getMessage(),
                 400
             );
-        } catch (PDOException $e) {
-            self::internalError('Erro PDO ao remover item do carrinho', $e);
         } catch (RuntimeException $e) {
             jsonResponse(
                 $e->getMessage(),
                 422
             );
         } catch (Throwable $e) {
-            self::internalError('Erro ao remover item do carrinho', $e);
+            jsonResponse(
+                'Erro ao remover item do carrinho: ' . $e->getMessage(),
+                500
+            );
         }
     }
 }
