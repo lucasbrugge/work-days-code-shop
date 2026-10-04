@@ -16,11 +16,12 @@ class CartService
 
     public function __construct(
         ?Cart $cartModel = null,
-        ?Product $productModel = null
+        ?Product $productModel = null,
+        ?PDO $db = null
     ) {
-        $this->db = Database::getConnection();
-        $this->cartModel = $cartModel ?? new Cart();
-        $this->productModel = $productModel ?? new Product();
+        $this->db = $db ?? Database::getConnection();
+        $this->cartModel = $cartModel ?? new Cart($this->db);
+        $this->productModel = $productModel ?? new Product($this->db);
     }
 
     public function getOrCreateGuestCart(?string $guestToken): array
@@ -61,289 +62,89 @@ class CartService
         ];
     }
 
-    public function mergeGuestCart(
-        int $userId,
-        string $guestToken
-    ): array {
-
+    public function mergeGuestCart(int $userId, string $guestToken): array
+    {
         $warnings = [];
-
-        $guestCart =
-            $this->cartModel
-                ->findActiveGuestByToken(
-                    $guestToken
-                );
-
-
+        $guestCart = $this->cartModel->findActiveGuestByToken($guestToken);
         if (!$guestCart) {
-
-            $warnings[] =
-                'O carrinho de visitante já foi utilizado ou não está mais disponível.';
-
-            return $warnings;
+            return ['O carrinho de visitante já foi utilizado ou não está mais disponível.'];
         }
 
-
-        $userCart =
-            $this->cartModel
-                ->findActiveByUserId(
-                    $userId,
-                    true
-                );
-
-        $guestItems =
-            $this->cartModel
-                ->findItemsForMerge(
-                    (int) $guestCart['id']
-                );
-
+        $guestCartId = (int) $guestCart['id'];
+        $userCart = $this->cartModel->findActiveByUserId($userId, true);
+        $guestItems = $this->cartModel->findItemsForMerge($guestCartId);
 
         if (!$userCart) {
+            $stocks = $this->cartModel->getProductStocks(array_column($guestItems, 'product_id'));
+            foreach ($guestItems as $item) {
+                $productId = (int) $item['product_id'];
+                $quantity = (int) $item['quantity'];
+                $product = $stocks[$productId] ?? null;
 
-            $productIds =
-                array_column(
-                    $guestItems,
-                    'product_id'
-                );
-
-            $stocks =
-                $this->cartModel
-                    ->getProductStocks(
-                        $productIds
-                    );
-
-
-            foreach (
-                $guestItems as $item
-            ) {
-
-                $productId =
-                    (int) $item['product_id'];
-
-                $quantity =
-                    (int) $item['quantity'];
-
-                $product =
-                    $stocks[$productId]
-                    ?? null;
-
-                if (
-                    !$product ||
-                    !$product['is_active'] ||
-                    (int) $product['stock'] <= 0
-                ) {
-
-                    $this->cartModel
-                        ->deleteItem(
-                            (int) $guestCart['id'],
-                            (int) $item['id']
-                        );
-
-                    $warnings[] =
-                        "Produto {$productId} indisponível e removido do carrinho.";
-
+                if (!$product || !$product['is_active'] || (int) $product['stock'] <= 0) {
+                    $this->cartModel->deleteItem($guestCartId, (int) $item['id']);
+                    $warnings[] = "Produto {$productId} indisponível e removido do carrinho.";
                     continue;
                 }
 
-
-                $stock =
-                    (int) $product['stock'];
-
-                if (
-                    $quantity > $stock
-                ) {
-
-                    $this->cartModel
-                        ->updateCartItemQuantity(
-                            (int) $guestCart['id'],
-                            $productId,
-                            $stock
-                        );
-
-                    $warnings[] =
-                        "Produto {$productId}: quantidade ajustada de {$quantity} para {$stock} por limite de estoque.";
+                $stock = (int) $product['stock'];
+                if ($quantity > $stock) {
+                    $this->cartModel->updateCartItemQuantity($guestCartId, $productId, $stock);
+                    $warnings[] = "Produto {$productId}: quantidade ajustada de {$quantity} para {$stock} por limite de estoque.";
                 }
             }
 
-            $this->cartModel
-                ->assignGuestCartToUser(
-                    (int) $guestCart['id'],
-                    $userId
-                );
-
-
+            $this->cartModel->assignGuestCartToUser($guestCartId, $userId);
             return $warnings;
         }
 
-        $userItems =
-            $this->cartModel
-                ->findItemsForMerge(
-                    (int) $userCart['id']
-                );
-
-
+        $userCartId = (int) $userCart['id'];
+        $userItems = $this->cartModel->findItemsForMerge($userCartId);
         $guestByProduct = [];
         $userByProduct = [];
-
-
-        foreach (
-            $guestItems as $item
-        ) {
-
-            $guestByProduct[
-                (int) $item['product_id']
-            ] = $item;
+        foreach ($guestItems as $item) {
+            $guestByProduct[(int) $item['product_id']] = $item;
+        }
+        foreach ($userItems as $item) {
+            $userByProduct[(int) $item['product_id']] = $item;
         }
 
+        $productIds = array_values(array_unique(array_merge(array_keys($guestByProduct), array_keys($userByProduct))));
+        $stocks = $this->cartModel->getProductStocks($productIds);
+        foreach ($productIds as $productId) {
+            $guestItem = $guestByProduct[$productId] ?? null;
+            $userItem = $userByProduct[$productId] ?? null;
+            $product = $stocks[$productId] ?? null;
 
-        foreach (
-            $userItems as $item
-        ) {
-
-            $userByProduct[
-                (int) $item['product_id']
-            ] = $item;
-        }
-
-        $productIds =
-            array_values(
-                array_unique(
-                    array_merge(
-                        array_keys(
-                            $guestByProduct
-                        ),
-                        array_keys(
-                            $userByProduct
-                        )
-                    )
-                )
-            );
-
-
-        $stocks =
-            $this->cartModel
-                ->getProductStocks(
-                    $productIds
-                );
-
-        foreach (
-            $guestByProduct
-            as $productId => $item
-        ) {
-
-            $product =
-                $stocks[$productId]
-                ?? null;
-
-            $guestQuantity =
-                (int) $item['quantity'];
-
-            $userQuantity =
-                isset(
-                    $userByProduct[
-                        $productId
-                    ]
-                )
-                    ? (int)
-                        $userByProduct[
-                            $productId
-                        ]['quantity']
-                    : 0;
-
-            if (
-                !$product ||
-                !$product['is_active'] ||
-                (int) $product['stock'] <= 0
-            ) {
-
-                $warnings[] =
-                    "Produto {$productId} não pôde ser adicionado porque está indisponível.";
-
+            if (!$product || !$product['is_active'] || (int) $product['stock'] <= 0) {
+                if ($userItem !== null) {
+                    $this->cartModel->deleteItem($userCartId, (int) $userItem['id']);
+                }
+                $warnings[] = "Produto {$productId} indisponível e removido do carrinho.";
                 continue;
             }
 
+            $stock = (int) $product['stock'];
+            $userQuantity = (int) ($userItem['quantity'] ?? 0);
+            $guestQuantity = (int) ($guestItem['quantity'] ?? 0);
+            $requestedQuantity = $userQuantity + $guestQuantity;
+            $finalQuantity = min($requestedQuantity, $stock);
 
-            $stock =
-                (int) $product['stock'];
-
-            $requestedQuantity =
-                $userQuantity +
-                $guestQuantity;
-
-            if (
-                $userQuantity > $stock
-            ) {
-
-                $finalQuantity =
-                    $userQuantity;
-
-                $warnings[] =
-                    "Produto {$productId}: nenhuma quantidade adicional foi incluída porque o carrinho já atingiu o limite de estoque.";
-
-            } else {
-
-                $finalQuantity =
-                    min(
-                        $requestedQuantity,
-                        $stock
-                    );
-
-
-                if (
-                    $requestedQuantity >
-                    $stock
-                ) {
-
-                    $warnings[] =
-                        "Produto {$productId}: quantidade ajustada de {$requestedQuantity} para {$stock} por limite de estoque.";
-                }
+            if ($requestedQuantity > $stock) {
+                $warnings[] = "Produto {$productId}: quantidade ajustada de {$requestedQuantity} para {$stock} por limite de estoque.";
             }
-            if (
-                isset(
-                    $userByProduct[
-                        $productId
-                    ]
-                )
-            ) {
 
-                if (
-                    $finalQuantity !==
-                    $userQuantity
-                ) {
-
-                    $this->cartModel
-                        ->updateCartItemQuantity(
-                            (int) $userCart['id'],
-                            (int) $productId,
-                            $finalQuantity
-                        );
+            if ($userItem !== null) {
+                if ($finalQuantity !== $userQuantity) {
+                    $this->cartModel->updateCartItemQuantity($userCartId, $productId, $finalQuantity);
                 }
-
-                continue;
-            }
-            if (
-                $finalQuantity > 0
-            ) {
-
-                $this->cartModel
-                    ->moveCartItem(
-                        (int) $userCart['id'],
-                        (int) $productId,
-                        $finalQuantity
-                    );
+            } elseif ($finalQuantity > 0) {
+                $this->cartModel->moveCartItem($userCartId, (int) $productId, $finalQuantity);
             }
         }
-        $this->cartModel
-            ->clearCartItems(
-                (int) $guestCart['id']
-            );
 
-        $this->cartModel
-            ->invalidateGuestCart(
-                (int) $guestCart['id']
-            );
-
-
+        $this->cartModel->clearCartItems($guestCartId);
+        $this->cartModel->invalidateGuestCart($guestCartId);
         return $warnings;
     }
     public function getCart(?string $guestToken, ?int $userId = null): array
