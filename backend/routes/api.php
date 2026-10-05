@@ -11,7 +11,7 @@ require_once __DIR__ . '/../controllers/NotImplementedController.php';
 require_once __DIR__ . '/../controllers/HealthController.php';
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ProductController.php';
-require_once __DIR__ . '/../controllers/AuthController.php';
+require_once __DIR__ . '/../controllers/UserController.php';
 require_once __DIR__ . '/../controllers/CartController.php';
 require_once __DIR__ . '/../controllers/OrderController.php';
 require_once __DIR__ . '/../controllers/AddressController.php';
@@ -206,6 +206,56 @@ $router->put(
 $router->delete(
     '/api/admin/products/{id}',
     fn($id) => ProductController::destroy($id),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
+);
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN - USERS
+|--------------------------------------------------------------------------
+*/
+
+$router->get(
+    '/api/admin/users',
+    fn() => UserController::adminIndex(),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
+);
+
+$router->get(
+    '/api/admin/users/{id}',
+    fn($id) => UserController::adminShow($id),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
+);
+
+$router->post(
+    '/api/admin/users',
+    fn() => UserController::store(),
+    [
+        fn() => AuthMiddleware::requireAuth(),
+        fn() => AdminMiddleware::requireAdmin(
+            AuthMiddleware::user() ?? []
+        )
+    ]
+);
+
+$router->put(
+    '/api/admin/users/{id}',
+    fn($id) => UserController::update($id),
     [
         fn() => AuthMiddleware::requireAuth(),
         fn() => AdminMiddleware::requireAdmin(

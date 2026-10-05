@@ -525,6 +525,20 @@ assertStatus(
     $customerAdmin
 );
 
+$customerUsers =
+    request(
+        'GET',
+        "{$baseUrl}/admin/users",
+        null,
+        $token
+    );
+
+assertStatus(
+    'Customer em /admin/users retorna 403',
+    403,
+    $customerUsers
+);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -618,6 +632,67 @@ if ($adminToken) {
         200,
         $adminProducts
     );
+
+    $adminUsers =
+        request(
+            'GET',
+            "{$baseUrl}/admin/users",
+            null,
+            $adminToken
+        );
+
+    assertStatus(
+        'Admin lista usuários em /admin/users',
+        200,
+        $adminUsers
+    );
+
+    $usersData = $adminUsers['json']['data'] ?? [];
+    $hasPassword = false;
+    foreach ($usersData as $u) {
+        if (isset($u['password_hash'])) {
+            $hasPassword = true;
+            break;
+        }
+    }
+
+    if (!$hasPassword && count($usersData) > 0) {
+        $passed++;
+        echo "✅ Lista de usuários não expõe password_hash\n";
+    } else {
+        $failed++;
+        echo "❌ Lista de usuários expôs password_hash ou retornou vazia\n";
+    }
+
+    $adminCreateUser = request(
+        'POST',
+        "{$baseUrl}/admin/users",
+        [
+            'name' => 'Usuário Teste Cadastro Admin',
+            'email' => 'teste.admin.create@workdays.com',
+            'password' => 'SenhaForte123!',
+            'role' => 'customer'
+        ],
+        $adminToken
+    );
+    assertStatus('Admin cadastra usuário em /admin/users', 201, $adminCreateUser);
+
+    $createdUserId = $adminCreateUser['json']['data']['id'] ?? null;
+    if ($createdUserId) {
+        $adminUpdateUser = request(
+            'PUT',
+            "{$baseUrl}/admin/users/{$createdUserId}",
+            [
+                'name' => 'Usuário Teste Editado Admin',
+                'email' => 'teste.admin.edited@workdays.com',
+                'role' => 'admin'
+            ],
+            $adminToken
+        );
+        assertStatus('Admin edita usuário em /admin/users/{id}', 200, $adminUpdateUser);
+
+        $db->prepare("DELETE FROM users WHERE id = :id")->execute(['id' => $createdUserId]);
+    }
 
     $adminLogout = request(
         'POST',
