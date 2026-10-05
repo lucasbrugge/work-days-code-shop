@@ -84,6 +84,17 @@ async function loadDashboard() {
     } catch (error) {
         console.error("Erro ao carregar pedidos do dashboard:", error);
     }
+
+    try {
+        const result = await getUsuarios();
+        const users = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+        const totalUsers = document.getElementById("totalUsers");
+        const userCard = totalUsers?.closest(".card");
+        if (totalUsers) totalUsers.textContent = users.length;
+        userCard?.querySelector("small")?.replaceChildren("Dados da API");
+    } catch (error) {
+        console.error("Erro ao carregar usuários do dashboard:", error);
+    }
 }
 
 

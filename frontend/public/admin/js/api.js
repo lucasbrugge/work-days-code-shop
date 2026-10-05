@@ -148,10 +148,7 @@ async function loginApi(username, password) {
 }
 
 /**
- * Lista usuários.
- *
- * O endpoint ainda não está disponível
- * no backend atual.
+ * Lista usuários para o painel administrativo.
  */
 async function getUsuarios() {
   return apiFetch("/admin/users", {
@@ -160,14 +157,31 @@ async function getUsuarios() {
 }
 
 /**
- * Cria usuário.
- *
- * O endpoint ainda não está disponível
- * no backend atual.
+ * Cria usuário no painel administrativo.
  */
 async function criarUsuario(usuario) {
   return apiFetch("/admin/users", {
     method: "POST",
+
+    body: JSON.stringify(usuario),
+  });
+}
+
+/**
+ * Busca um usuário pelo ID.
+ */
+async function getUsuario(id) {
+  return apiFetch(`/admin/users/${id}`, {
+    method: "GET",
+  });
+}
+
+/**
+ * Atualiza um usuário no painel administrativo.
+ */
+async function atualizarUsuario(id, usuario) {
+  return apiFetch(`/admin/users/${id}`, {
+    method: "PUT",
 
     body: JSON.stringify(usuario),
   });
