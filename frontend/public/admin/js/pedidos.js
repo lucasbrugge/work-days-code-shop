@@ -119,6 +119,9 @@
             await updateAdminOrderStatus(button.dataset.saveOrderStatus, status);
             showMessage(`Pedido atualizado para "${statusLabels[status]}".`);
             await loadOrders();
+            if (typeof loadDashboard === "function") {
+                loadDashboard();
+            }
         } catch (error) {
             showMessage(error.message || "Erro ao atualizar pedido.", "error");
             button.disabled = false;
